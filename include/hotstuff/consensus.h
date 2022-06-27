@@ -31,6 +31,7 @@ namespace hotstuff {
 
 struct Proposal;
 struct Vote;
+struct LocalOrder;
 struct Finality;
 
 /** Abstraction for HotStuff protocol state machine (without network implementation). */
@@ -106,6 +107,10 @@ class HotStuffCore {
                     const std::vector<block_t> &parents,
                     bytearray_t &&extra = bytearray_t());
 
+    // Themis
+    /** Call to submit local order to the current leader **/
+    void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds);
+
     /* Functions required to construct concrete instances for abstract classes.
      * */
 
@@ -124,6 +129,9 @@ class HotStuffCore {
      * should send the vote message to a *good* proposer to have good liveness,
      * while safety is always guaranteed by HotStuffCore. */
     virtual void do_vote(ReplicaID last_proposer, const Vote &vote) = 0;
+    /** Called upon sending out local ordering to the next proposer. */
+    // Themis
+    virtual void do_send_local_order(ReplicaID proposer, const LocalOrder &local_order) = 0;
 
     /* The user plugs in the detailed instances for those
      * polymorphic data types. */
@@ -261,6 +269,89 @@ struct Vote: public Serializable {
         s << "<vote "
           << "rid=" << std::to_string(voter) << " "
           << "blk=" << get_hex10(blk_hash) << ">";
+        return s;
+    }
+};
+
+// Themis
+/** Abstraction for LocalOrder messages. */
+struct LocalOrder: public Serializable {
+    ReplicaID initiator;
+    /** Local ordering as seen by replica "initiator" **/
+    std::vector<uint256_t> ordered_hashes;
+    /** Local transaction ordering for previously proposed shaded transaction and have missing edges **/
+    std::vector<std::pair<uint256_t, uint256_t>> l_update;
+    /** handle of the core object to allow polymorphism */
+    HotStuffCore *hsc;
+
+    LocalOrder(): hsc(nullptr) {}
+    LocalOrder(ReplicaID initiator, 
+                const std::vector<uint256_t> &ordered_hashes, 
+                const std::vector<std::pair<uint256_t, uint256_t>> &l_update,
+                HotStuffCore *hsc) : 
+                    initiator(initiator),
+                    ordered_hashes(ordered_hashes),
+                    l_update(l_update),
+                    hsc(hsc){}
+
+    LocalOrder(const LocalOrder &other):
+                initiator(other.initiator),
+                ordered_hashes(other.ordered_hashes),
+                l_update(other.l_update),
+                hsc(other.hsc){}
+
+    LocalOrder(LocalOrder &&other) = default;
+
+    void serialize(DataStream &s) const override {
+        /** Serilize replica ID **/
+        s << initiator;
+
+        /** Serialize local ordering transaction hashes **/
+        s << htole((uint32_t)ordered_hashes.size());
+        for (const auto &h: ordered_hashes) {
+            s << h;
+        }
+
+        /** Serialize edges that were missing in previous proposals and found now on the replica **/
+        s << htole((uint32_t)l_update.size());
+        for (const auto &update: l_update) {
+            s << update.first;
+            s << update.second;
+        }
+    }
+
+    void unserialize(DataStream &s) override {
+        assert(hsc != nullptr);
+
+        /** unserialize the replica id **/
+        s >> initiator;
+
+        /** unserialized ordered_hashes **/
+        uint32_t size;
+        s >> size;
+        size = letoh(size);
+        ordered_hashes.resize(size);
+        for (auto &hashes: ordered_hashes)
+        {
+            s >> hashes;
+        }
+
+        /** unserialized l_update **/
+        s >> size;
+        size = letoh(size);
+        l_update.resize(size);
+        for (auto &edge: l_update)
+        {
+            s >> edge.first;
+            s >> edge.second;
+        }
+    }
+
+    operator std::string () const {
+        DataStream s;
+        s << "<vote "
+          << "rid=" << std::to_string(initiator) << " "
+          << ">";
         return s;
     }
 };

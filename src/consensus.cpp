@@ -247,6 +247,17 @@ void HotStuffCore::on_receive_vote(const Vote &vote) {
         on_qc_finish(blk);
     }
 }
+
+// Themis
+void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds){
+    // TODO: Themis identify previously missing edges
+    std::vector<std::pair<uint256_t, uint256_t>> l_update;
+    /** create LocalOrder struct Object **/
+    LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
+    /** send local order to leader **/
+    do_send_local_order(proposer, local_order);
+}
+
 /*** end HotStuff protocol logic ***/
 void HotStuffCore::on_init(uint32_t nfaulty) {
     config.nmajority = config.nreplicas - nfaulty;

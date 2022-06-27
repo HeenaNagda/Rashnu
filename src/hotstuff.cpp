@@ -75,6 +75,16 @@ void MsgRespBlock::postponed_parse(HotStuffCore *hsc) {
     }
 }
 
+
+// Themis
+const opcode_t MsgLocalOrder::opcode;
+MsgLocalOrder::MsgLocalOrder(const LocalOrder &local_order) { serialized << local_order; }
+void MsgLocalOrder::postponed_parse(HotStuffCore *hsc) {
+    local_order.hsc = hsc;
+    serialized >> local_order;
+}
+
+
 // TODO: improve this function
 void HotStuffBase::exec_command(uint256_t cmd_hash, commit_cb_t callback) {
     cmd_pending.enqueue(std::make_pair(cmd_hash, callback));
@@ -259,6 +269,31 @@ void HotStuffBase::resp_blk_handler(MsgRespBlock &&msg, const Net::conn_t &) {
         if (blk) on_fetch_blk(blk);
 }
 
+// Themis
+void HotStuffBase::local_order_handler(MsgLocalOrder &&msg, const Net::conn_t &conn) {
+    const PeerId &peer = conn->get_peer_id();
+    if (peer.is_null()) return;
+    msg.postponed_parse(this);
+    auto &local_order = msg.local_order;
+    if (peer != get_config().get_peer_id(local_order.initiator))
+    {
+        LOG_WARN("invalid local order from %d", local_order.initiator);
+        return;
+    }
+
+    // TODO: Themis
+    // promise::all(std::vector<promise_t>{
+    //     async_deliver_blk(blk->get_hash(), peer)
+    // }).then([this, prop = std::move(prop)]() {
+    //     on_receive_proposal(prop);
+    // });
+
+    // on_receive_local_order()
+    // wait for majority of replicas
+
+    // FairPropose()
+}
+
 bool HotStuffBase::conn_handler(const salticidae::ConnPool::conn_t &conn, bool connected) {
     if (connected)
     {
@@ -396,6 +431,29 @@ void HotStuffBase::do_vote(ReplicaID last_proposer, const Vote &vote) {
     });
 }
 
+// Themis
+void HotStuffBase::do_send_local_order(ReplicaID proposer, const LocalOrder &local_order) {
+    // TODO: Themis about pmaker what to do?
+
+    // pmaker->beat_resp(last_proposer)
+    //     .then([this, local_order](ReplicaID proposer) {
+    //     if (proposer == get_id())
+    //     {
+    //         on_receive_vote(vote);
+    //     }
+    //     else{
+    //         pn.send_msg(MsgLocalOrder(local_order), get_config().get_peer_id(proposer));
+    //     }
+    // });
+    if (proposer == get_id())
+    {
+        // on_receive_local_order(local_order);
+    }
+    else{
+        pn.send_msg(MsgLocalOrder(local_order), get_config().get_peer_id(proposer));
+    }
+}
+
 void HotStuffBase::do_consensus(const block_t &blk) {
     pmaker->on_consensus(blk);
 }
@@ -410,6 +468,9 @@ void HotStuffBase::do_decide(Finality &&fin) {
         decision_waiting.erase(it);
     }
 }
+
+// Themis
+
 
 HotStuffBase::~HotStuffBase() {}
 
@@ -453,6 +514,27 @@ void HotStuffBase::start(
                 it = decision_waiting.insert(std::make_pair(cmd_hash, e.second)).first;
             else
                 e.second(Finality(id, 0, 0, 0, cmd_hash, uint256_t()));
+
+
+            // Themis
+            local_order_buffer.push(cmd_hash);
+            if (local_order_buffer.size() >= blk_size) {
+                std::vector<uint256_t> cmds;
+                for (uint32_t i = 0; i < blk_size; i++)
+                {
+                    cmds.push_back(local_order_buffer.front());
+                    local_order_buffer.pop();
+                }
+                
+                pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {
+                    if (proposer == get_id())
+                        on_local_order(proposer, cmds);
+                });
+
+                return true;
+            }
+
+            /*
             if (proposer != get_id()) continue;
             cmd_pending_buffer.push(cmd_hash);
             if (cmd_pending_buffer.size() >= blk_size)
@@ -469,6 +551,7 @@ void HotStuffBase::start(
                 });
                 return true;
             }
+            */
         }
         return false;
     });

@@ -39,6 +39,8 @@ const double ent_waiting_timeout = 10;
 const double double_inf = 1e10;
 
 /** Network message format for HotStuff. */
+
+
 struct MsgPropose {
     static const opcode_t opcode = 0x0;
     DataStream serialized;
@@ -77,6 +79,17 @@ struct MsgRespBlock {
     MsgRespBlock(DataStream &&s): serialized(std::move(s)) {}
     void postponed_parse(HotStuffCore *hsc);
 };
+
+// Themis
+struct MsgLocalOrder {
+    static const opcode_t opcode = 0x4;
+    DataStream serialized;
+    LocalOrder local_order;
+    MsgLocalOrder(const LocalOrder &);
+    MsgLocalOrder(DataStream &&s): serialized(std::move(s)) {}
+    void postponed_parse(HotStuffCore *hsc);
+};
+
 
 using promise::promise_t;
 
@@ -161,6 +174,8 @@ class HotStuffBase: public HotStuffCore {
     using cmd_queue_t = salticidae::MPSCQueueEventDriven<std::pair<uint256_t, commit_cb_t>>;
     cmd_queue_t cmd_pending;
     std::queue<uint256_t> cmd_pending_buffer;
+    // Themis
+    std::queue<uint256_t> local_order_buffer;
 
     /* statistics */
     uint64_t fetched;
@@ -190,11 +205,16 @@ class HotStuffBase: public HotStuffCore {
     inline void req_blk_handler(MsgReqBlock &&, const Net::conn_t &);
     /** receives a block */
     inline void resp_blk_handler(MsgRespBlock &&, const Net::conn_t &);
+    // Themis
+    /** receives local ordering on leader from replica **/
+    inline void local_order_handler(MsgLocalOrder &&, const Net::conn_t &);
 
     inline bool conn_handler(const salticidae::ConnPool::conn_t &, bool);
 
     void do_broadcast_proposal(const Proposal &) override;
     void do_vote(ReplicaID, const Vote &) override;
+    // Themis
+    void do_send_local_order(ReplicaID, const LocalOrder &) override;
     void do_decide(Finality &&) override;
     void do_consensus(const block_t &blk) override;
 
