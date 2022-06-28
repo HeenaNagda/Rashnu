@@ -110,6 +110,8 @@ class HotStuffCore {
     // Themis
     /** Call to submit local order to the current leader **/
     void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds);
+    /** Called when local order is received on Leader from a Replica  **/
+    void on_receive_local_order (const LocalOrder &local_order);
 
     /* Functions required to construct concrete instances for abstract classes.
      * */
@@ -349,9 +351,19 @@ struct LocalOrder: public Serializable {
 
     operator std::string () const {
         DataStream s;
-        s << "<vote "
+        s << "<LocalOrder "
           << "rid=" << std::to_string(initiator) << " "
-          << ">";
+          << "orderedHash=";
+        for (auto &hashes: ordered_hashes)
+        {
+            s << hashes << ",";
+        }
+        s << " L_update=";
+        for (auto &edge: l_update)
+        {
+            s << "(" << edge.first << "," << edge.second << "),";
+        }
+        s << ">";
         return s;
     }
 };

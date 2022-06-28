@@ -222,6 +222,8 @@ struct BlockHeightCmp {
 class EntityStorage {
     std::unordered_map<const uint256_t, block_t> blk_cache;
     std::unordered_map<const uint256_t, command_t> cmd_cache;
+    std::unordered_map<ReplicaID, std::vector<uint256_t>> ordered_hash_cache;                     // Themis
+    std::unordered_map<ReplicaID, std::vector<std::pair<uint256_t, uint256_t>>> l_update_cache;   // Themis
     public:
     bool is_blk_delivered(const uint256_t &blk_hash) {
         auto it = blk_cache.find(blk_hash);
@@ -299,6 +301,18 @@ class EntityStorage {
             HOTSTUFF_LOG_INFO("cannot release (%lu)", blk.get_cnt());
 #endif
         return false;
+    }
+
+    // Themis
+    void add_local_order(ReplicaID rid, const std::vector<uint256_t> &ordered_hash, 
+                            const std::vector<std::pair<uint256_t, uint256_t>> &l_update){
+        ordered_hash_cache.insert(std::make_pair(rid, ordered_hash));
+        l_update_cache.insert(std::make_pair(rid, l_update));
+    }
+
+    // Themis
+    size_t get_local_order_cache_size(){
+        return ordered_hash_cache.size();
     }
 };
 

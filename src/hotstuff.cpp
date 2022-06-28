@@ -288,10 +288,8 @@ void HotStuffBase::local_order_handler(MsgLocalOrder &&msg, const Net::conn_t &c
     //     on_receive_proposal(prop);
     // });
 
-    // on_receive_local_order()
-    // wait for majority of replicas
-
-    // FairPropose()
+    on_receive_local_order(local_order);
+    
 }
 
 bool HotStuffBase::conn_handler(const salticidae::ConnPool::conn_t &conn, bool connected) {
@@ -399,6 +397,7 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
     pn.reg_handler(salticidae::generic_bind(&HotStuffBase::vote_handler, this, _1, _2));
     pn.reg_handler(salticidae::generic_bind(&HotStuffBase::req_blk_handler, this, _1, _2));
     pn.reg_handler(salticidae::generic_bind(&HotStuffBase::resp_blk_handler, this, _1, _2));
+    pn.reg_handler(salticidae::generic_bind(&HotStuffBase::local_order_handler, this, _1, _2)); // Themis
     pn.reg_conn_handler(salticidae::generic_bind(&HotStuffBase::conn_handler, this, _1, _2));
     pn.reg_error_handler([](const std::exception_ptr _err, bool fatal, int32_t async_id) {
         try {
@@ -447,7 +446,7 @@ void HotStuffBase::do_send_local_order(ReplicaID proposer, const LocalOrder &loc
     // });
     if (proposer == get_id())
     {
-        // on_receive_local_order(local_order);
+        on_receive_local_order (local_order);
     }
     else{
         pn.send_msg(MsgLocalOrder(local_order), get_config().get_peer_id(proposer));
@@ -527,8 +526,7 @@ void HotStuffBase::start(
                 }
                 
                 pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {
-                    if (proposer == get_id())
-                        on_local_order(proposer, cmds);
+                    on_local_order(proposer, cmds);
                 });
 
                 return true;

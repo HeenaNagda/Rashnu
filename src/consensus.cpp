@@ -249,13 +249,35 @@ void HotStuffCore::on_receive_vote(const Vote &vote) {
 }
 
 // Themis
-void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds){
+void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds) {
     // TODO: Themis identify previously missing edges
     std::vector<std::pair<uint256_t, uint256_t>> l_update;
     /** create LocalOrder struct Object **/
     LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
     /** send local order to leader **/
     do_send_local_order(proposer, local_order);
+}
+
+// Themis
+void HotStuffCore::on_receive_local_order (const LocalOrder &local_order) {
+    LOG_PROTO("got %s", std::string(local_order).c_str());
+    LOG_PROTO("now state: %s", std::string(*this).c_str());
+
+    // TODO: Themis
+
+    // wait for majority of replicas
+    size_t qsize = storage->get_local_order_cache_size();
+    if(qsize >= config.nmajority) { return; }
+    
+    // add new local order to the storage
+    storage->add_local_order(local_order.initiator, local_order.ordered_hashes, local_order.l_update);
+
+    // Trigger FairPropose() and FairUpdate()
+    qsize = storage->get_local_order_cache_size();
+    if(qsize == config.nmajority){
+        // FairPropose()
+        // FairUpdate()
+    }
 }
 
 /*** end HotStuff protocol logic ***/
