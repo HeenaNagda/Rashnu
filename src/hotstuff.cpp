@@ -446,9 +446,11 @@ void HotStuffBase::do_send_local_order(ReplicaID proposer, const LocalOrder &loc
     // });
     if (proposer == get_id())
     {
+        HOTSTUFF_LOG_INFO("[[do_send_local_order]] [R-%d] [L-%d] deliver LocalOrder to itself = %s", get_id(), proposer, local_order);
         on_receive_local_order (local_order);
     }
     else{
+        HOTSTUFF_LOG_INFO("[[do_send_local_order]] [R-%d] [L-%d] Send LocalOrder to Leader = %s", get_id(), proposer, local_order);
         pn.send_msg(MsgLocalOrder(local_order), get_config().get_peer_id(proposer));
     }
 }
@@ -475,6 +477,7 @@ HotStuffBase::~HotStuffBase() {}
 
 void HotStuffBase::start(
         std::vector<std::tuple<NetAddr, pubkey_bt, uint256_t>> &&replicas,
+        double fairness_parameter,
         bool ec_loop) {
     for (size_t i = 0; i < replicas.size(); i++)
     {
@@ -496,7 +499,7 @@ void HotStuffBase::start(
     uint32_t nfaulty = peers.size() / 3;
     if (nfaulty == 0)
         LOG_WARN("too few replicas in the system to tolerate any failure");
-    on_init(nfaulty);
+    on_init(nfaulty, fairness_parameter);
     pmaker->init(this);
     if (ec_loop)
         ec.dispatch();
@@ -517,14 +520,18 @@ void HotStuffBase::start(
 
             // Themis
             local_order_buffer.push(cmd_hash);
-            if (local_order_buffer.size() >= blk_size) {
+            HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Push commans to local buffer = 0x%x", get_id(), proposer, cmd_hash);
+            if (local_order_buffer.size() >= 1) {
                 std::vector<uint256_t> cmds;
-                for (uint32_t i = 0; i < blk_size; i++)
+                for (uint32_t i = 0; i < 1; i++)
                 {
                     cmds.push_back(local_order_buffer.front());
                     local_order_buffer.pop();
                 }
-                
+
+                for (uint32_t i = 0; i < 1; i++){
+                    HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Created List of commands and sending to pacemaker (%d) = 0x%x", get_id(), proposer, i, cmds[i]);
+                }
                 pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {
                     on_local_order(proposer, cmds);
                 });

@@ -23,3 +23,6 @@ target_link_libraries(hotstuff-app hotstuff_static)
 
 add_executable(hotstuff-client hotstuff_client.cpp)
 target_link_libraries(hotstuff-client hotstuff_static)
+
+add_executable(themis-client themis_client.cpp)
+target_link_libraries(themis-client hotstuff_static)

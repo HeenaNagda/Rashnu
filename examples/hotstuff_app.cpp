@@ -118,7 +118,8 @@ class HotStuffApp: public HotStuff {
 #endif
 
     public:
-    HotStuffApp(uint32_t blk_size,
+    HotStuffApp(double fairness_parameter,
+                uint32_t blk_size,
                 double stat_period,
                 double impeach_timeout,
                 ReplicaID idx,
@@ -131,7 +132,7 @@ class HotStuffApp: public HotStuff {
                 const Net::Config &repnet_config,
                 const ClientNetwork<opcode_t>::Config &clinet_config);
 
-    void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps);
+    void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps, double fairness_parameter);
     void stop();
 };
 
@@ -150,6 +151,7 @@ int main(int argc, char **argv) {
     ElapsedTime elapsed;
     elapsed.start();
 
+    auto opt_fairness_parameter = Config::OptValDouble::create(1);
     auto opt_blk_size = Config::OptValInt::create(1);
     auto opt_parent_limit = Config::OptValInt::create(-1);
     auto opt_stat_period = Config::OptValDouble::create(10);
@@ -174,6 +176,7 @@ int main(int argc, char **argv) {
     auto opt_max_rep_msg = Config::OptValInt::create(4 << 20); // 4M by default
     auto opt_max_cli_msg = Config::OptValInt::create(65536); // 64K by default
 
+    config.add_opt("fairness-parameter", opt_fairness_parameter, Config::SET_VAL);
     config.add_opt("block-size", opt_blk_size, Config::SET_VAL);
     config.add_opt("parent-limit", opt_parent_limit, Config::SET_VAL);
     config.add_opt("stat-period", opt_stat_period, Config::SET_VAL);
@@ -262,7 +265,8 @@ int main(int argc, char **argv) {
     clinet_config
         .burst_size(opt_cliburst->get())
         .nworker(opt_clinworker->get());
-    papp = new HotStuffApp(opt_blk_size->get(),
+    papp = new HotStuffApp(opt_fairness_parameter->get(),
+                        opt_blk_size->get(),
                         opt_stat_period->get(),
                         opt_imp_timeout->get(),
                         idx,
@@ -289,12 +293,13 @@ int main(int argc, char **argv) {
     ev_sigint.add(SIGINT);
     ev_sigterm.add(SIGTERM);
 
-    papp->start(reps);
+    papp->start(reps, opt_fairness_parameter->get());
     elapsed.stop(true);
     return 0;
 }
 
-HotStuffApp::HotStuffApp(uint32_t blk_size,
+HotStuffApp::HotStuffApp(double fairness_parameter,
+                        uint32_t blk_size,
                         double stat_period,
                         double impeach_timeout,
                         ReplicaID idx,
@@ -339,13 +344,14 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
     const NetAddr addr = conn->get_addr();
     auto cmd = parse_cmd(msg.serialized);
     const auto &cmd_hash = cmd->get_hash();
-    HOTSTUFF_LOG_DEBUG("processing %s", std::string(*cmd).c_str());
+    HOTSTUFF_LOG_DEBUG("processing %s", std::string(*cmd).c_str());                            
+    HOTSTUFF_LOG_INFO("[[client_request_cmd_handler]] [R-%d] [L-] Received Client Command = 0x%x", get_id(), cmd_hash);
     exec_command(cmd_hash, [this, addr](Finality fin) {
         resp_queue.enqueue(std::make_pair(fin, addr));
     });
 }
 
-void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps) {
+void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps, double fairness_parameter) {
     ev_stat_timer = TimerEvent(ec, [this](TimerEvent &) {
         HotStuff::print_stat();
         HotStuffApp::print_stat();
@@ -363,7 +369,7 @@ void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytea
     HOTSTUFF_LOG_INFO("blk_size = %lu", blk_size);
     HOTSTUFF_LOG_INFO("conns = %lu", HotStuff::size());
     HOTSTUFF_LOG_INFO("** starting the event loop...");
-    HotStuff::start(reps);
+    HotStuff::start(reps, fairness_parameter);
     cn.reg_conn_handler([this](const salticidae::ConnPool::conn_t &_conn, bool connected) {
         auto conn = salticidae::static_pointer_cast<conn_t::type>(_conn);
         if (connected)

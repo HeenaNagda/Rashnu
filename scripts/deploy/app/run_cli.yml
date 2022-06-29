@@ -24,7 +24,8 @@
         mode: '0644'
     - name: start the hotstuff client
       hotstuff_cli:
-        bin: "{{ client_bin | default('~/libhotstuff/examples/hotstuff_client') }}"
+        # bin: "{{ client_bin | default('~/libhotstuff/examples/hotstuff_client') }}"
+        bin: "{{ client_bin | default('~/libhotstuff/examples/themis_client') }}"
         log_dir: "{{ log_dir }}"
         cwd: "{{ conf_dir }}"
         idx: "{{ client_idx | default(1) }}"

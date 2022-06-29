@@ -62,8 +62,11 @@ class ReplicaConfig {
     public:
     size_t nreplicas;
     size_t nmajority;
+    double fairness_parameter;
 
-    ReplicaConfig(): nreplicas(0), nmajority(0) {}
+    ReplicaConfig(): nreplicas(0), nmajority(0), fairness_parameter(1) {
+        // Cterate non blank transaction threshold
+    }
 
     void add_replica(ReplicaID rid, const ReplicaInfo &info) {
         replica_map.insert(std::make_pair(rid, info));
@@ -314,6 +317,26 @@ class EntityStorage {
     size_t get_local_order_cache_size(){
         return ordered_hash_cache.size();
     }
+
+    // Themis
+    std::vector<ReplicaID> get_local_order_replia_vector(){
+        std::vector<ReplicaID> replicas;
+        for(auto const& order: ordered_hash_cache){
+            replicas.push_back(order.first);
+        }
+        return replicas;
+    }
+
+    // Themis
+    std::vector<uint256_t> get_ordered_hash_vector(ReplicaID replica) {
+        return ordered_hash_cache[replica];
+    }
+
+    // Themis
+    std::vector<std::pair<uint256_t, uint256_t>> get_l_update_vector(ReplicaID replica) {
+        return l_update_cache[replica];
+    }
+
 };
 
 }

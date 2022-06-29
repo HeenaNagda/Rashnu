@@ -255,6 +255,7 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
     /** create LocalOrder struct Object **/
     LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
     /** send local order to leader **/
+    HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] LocalOrder Object = %s", get_id(), proposer, local_order);
     do_send_local_order(proposer, local_order);
 }
 
@@ -263,7 +264,10 @@ void HotStuffCore::on_receive_local_order (const LocalOrder &local_order) {
     LOG_PROTO("got %s", std::string(local_order).c_str());
     LOG_PROTO("now state: %s", std::string(*this).c_str());
 
-    // TODO: Themis
+    HOTSTUFF_LOG_INFO("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder on Leader (first ordered hash)= 0x%x", local_order.initiator, get_id(), local_order.ordered_hashes[0]);
+
+
+    // TODO: if this is not a leader then ignore the request/ message 
 
     // wait for majority of replicas
     size_t qsize = storage->get_local_order_cache_size();
@@ -280,9 +284,41 @@ void HotStuffCore::on_receive_local_order (const LocalOrder &local_order) {
     }
 }
 
+// Themis
+void HotStuffCore::FairPropose() {
+    
+    /** get those replicas that have sent their local order to the Leader **/
+    std::vector<ReplicaID> replicas = storage->get_local_order_replia_vector();
+
+    /** Create an empty graph G = (V,E) **/
+    std::unordered_map<uint256_t, std::vector<uint256_t>> graph;
+
+    /** For each non-blank tx, add a vertex tx to V **/
+    std::unordered_map<uint256_t, uint16_t> transaction_count;
+    // find non blank transactions
+    // for(ReplicaID replica: replicas){
+    //     for(uint256_t command_hash: )
+    // }
+    
+}
+
+// Themis
+uint16_t HotStuffCore::get_non_blank_tx_threshold() {
+    size_t nmajority = config.nmajority;
+    size_t n = config.nreplicas;
+    size_t f = n - nmajority;
+
+}
+
+// Themis
+uint16_t HotStuffCore::get_tx_edge_threshold() {
+
+}
+
 /*** end HotStuff protocol logic ***/
-void HotStuffCore::on_init(uint32_t nfaulty) {
+void HotStuffCore::on_init(uint32_t nfaulty, double fairness_parameter) {
     config.nmajority = config.nreplicas - nfaulty;
+    config.fairness_parameter = fairness_parameter;
     b0->qc = create_quorum_cert(b0->get_hash());
     b0->qc->compute();
     b0->self_qc = b0->qc->clone();
