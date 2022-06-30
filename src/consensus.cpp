@@ -287,18 +287,54 @@ void HotStuffCore::on_receive_local_order (const LocalOrder &local_order) {
 // Themis
 void HotStuffCore::FairPropose() {
     
-    /** get those replicas that have sent their local order to the Leader **/
+    /** (1) get those replicas that have sent their local order to the Leader **/
     std::vector<ReplicaID> replicas = storage->get_local_order_replia_vector();
 
-    /** Create an empty graph G = (V,E) **/
-    std::unordered_map<uint256_t, std::vector<uint256_t>> graph;
+    /** (2) Create an empty graph G = (V,E) **/
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;
 
-    /** For each non-blank tx, add a vertex tx to V **/
-    std::unordered_map<uint256_t, uint16_t> transaction_count;
-    // find non blank transactions
-    // for(ReplicaID replica: replicas){
-    //     for(uint256_t command_hash: )
-    // }
+    /** (3) For each non-blank tx, add a vertex tx to V **/
+    std::unordered_map<uint256_t, uint16_t> tx_count;
+    /* find transaction count */
+    for(ReplicaID replica: replicas){
+        for(uint256_t tx_hash: storage->get_ordered_hash_vector(replica)){
+            tx_count[tx_hash]++;
+        }
+    }
+    /* find non blank transactions and add them to the graph */
+    for(auto &tx: tx_count){
+        if(tx.second * 1.0 >= config.non_blank_tx_threshold){
+            /** this is a non blank transaction **/
+            graph.insert(std::make_pair(tx.first, std::unordered_set<uint256_t>()));
+        }
+    }
+
+    /** (4) Add edges to E **/
+    std::unordered_map<uint256_t, std::unordered_map<uint256_t, uint16_t>> edge_count;
+    /* Find edge count */
+    for(ReplicaID replica: replicas){
+        std::vector<uint256_t> ordered_hash = storage->get_ordered_hash_vector(replica);
+        size_t len = ordered_hash.size();
+        for(size_t i=0; i<len; i++) {
+            for(size_t j=i+1; j<len; j++){
+                edge_count[ordered_hash[i]][ordered_hash[j]]++;
+            }
+        }
+    }
+    /* add edges where k>=n(1-gama)+f+1 {>= tx_edge_threshold} */
+    for(auto &from : edge_count){
+        for(auto &to : from.second){
+            uint256_t from_v = from.first, to_v = to.first;
+            uint16_t occurance = to.second;
+            if(1.0 * occurance >= config.tx_edge_threshold
+                && graph[to_v].count(from_v)==0){ 
+                    /* edge occurance is above threshold and no reverse edge is already present in graph */
+                    graph[from_v].insert(to_v);
+                }
+        }
+    }
+    /** (5) Compute the condensation graph G* **/
+    
     
 }
 

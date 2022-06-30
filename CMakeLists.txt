@@ -54,6 +54,7 @@ add_library(hotstuff
     src/entity.cpp
     src/consensus.cpp
     src/hotstuff.cpp
+    src/graph.cpp
     )
 
 option(BUILD_SHARED "build shared library." OFF)

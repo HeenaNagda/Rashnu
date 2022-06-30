@@ -521,9 +521,9 @@ void HotStuffBase::start(
             // Themis
             local_order_buffer.push(cmd_hash);
             HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Push commans to local buffer = 0x%x", get_id(), proposer, cmd_hash);
-            if (local_order_buffer.size() >= 1) {
+            if (local_order_buffer.size() >= blk_size) {
                 std::vector<uint256_t> cmds;
-                for (uint32_t i = 0; i < 1; i++)
+                for (uint32_t i = 0; i < blk_size; i++)
                 {
                     cmds.push_back(local_order_buffer.front());
                     local_order_buffer.pop();
