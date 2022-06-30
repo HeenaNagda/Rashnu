@@ -241,7 +241,7 @@ class HotStuffBase: public HotStuffCore {
     /* Submit the command to be decided. */
     void exec_command(uint256_t cmd_hash, commit_cb_t callback);
     void start(std::vector<std::tuple<NetAddr, pubkey_bt, uint256_t>> &&replicas,
-                double fairness_parameter,
+                double fairness_parameter,      // Themis
                 bool ec_loop = false);
 
     size_t size() const { return peers.size(); }
@@ -314,7 +314,9 @@ class HotStuff: public HotStuffBase {
                     nworker,
                     netconfig) {}
 
-    void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &replicas,  double fairness_parameter, bool ec_loop = false) {
+    void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &replicas, 
+                double fairness_parameter,  // Themis
+                bool ec_loop = false) {
         std::vector<std::tuple<NetAddr, pubkey_bt, uint256_t>> reps;
         for (auto &r: replicas)
             reps.push_back(
@@ -323,7 +325,7 @@ class HotStuff: public HotStuffBase {
                     new PubKeyType(std::get<1>(r)),
                     uint256_t(std::get<2>(r))
                 ));
-        HotStuffBase::start(std::move(reps), fairness_parameter, ec_loop);
+        HotStuffBase::start(std::move(reps), fairness_parameter, ec_loop);      // Themis
     }
 };
 

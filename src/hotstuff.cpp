@@ -477,7 +477,7 @@ HotStuffBase::~HotStuffBase() {}
 
 void HotStuffBase::start(
         std::vector<std::tuple<NetAddr, pubkey_bt, uint256_t>> &&replicas,
-        double fairness_parameter,
+        double fairness_parameter,      // Themis
         bool ec_loop) {
     for (size_t i = 0; i < replicas.size(); i++)
     {
@@ -499,7 +499,7 @@ void HotStuffBase::start(
     uint32_t nfaulty = peers.size() / 3;
     if (nfaulty == 0)
         LOG_WARN("too few replicas in the system to tolerate any failure");
-    on_init(nfaulty, fairness_parameter);
+    on_init(nfaulty, fairness_parameter);       // Themis
     pmaker->init(this);
     if (ec_loop)
         ec.dispatch();

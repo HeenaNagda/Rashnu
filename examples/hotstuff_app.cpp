@@ -118,7 +118,7 @@ class HotStuffApp: public HotStuff {
 #endif
 
     public:
-    HotStuffApp(double fairness_parameter,
+    HotStuffApp(double fairness_parameter,      // Themis
                 uint32_t blk_size,
                 double stat_period,
                 double impeach_timeout,
@@ -132,7 +132,7 @@ class HotStuffApp: public HotStuff {
                 const Net::Config &repnet_config,
                 const ClientNetwork<opcode_t>::Config &clinet_config);
 
-    void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps, double fairness_parameter);
+    void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps, double fairness_parameter); // Themis
     void stop();
 };
 
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
     ElapsedTime elapsed;
     elapsed.start();
 
-    auto opt_fairness_parameter = Config::OptValDouble::create(1);
+    auto opt_fairness_parameter = Config::OptValDouble::create(1);  // Themis
     auto opt_blk_size = Config::OptValInt::create(1);
     auto opt_parent_limit = Config::OptValInt::create(-1);
     auto opt_stat_period = Config::OptValDouble::create(10);
@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
     auto opt_max_rep_msg = Config::OptValInt::create(4 << 20); // 4M by default
     auto opt_max_cli_msg = Config::OptValInt::create(65536); // 64K by default
 
-    config.add_opt("fairness-parameter", opt_fairness_parameter, Config::SET_VAL);
+    config.add_opt("fairness-parameter", opt_fairness_parameter, Config::SET_VAL);  // Themis
     config.add_opt("block-size", opt_blk_size, Config::SET_VAL);
     config.add_opt("parent-limit", opt_parent_limit, Config::SET_VAL);
     config.add_opt("stat-period", opt_stat_period, Config::SET_VAL);
@@ -265,7 +265,7 @@ int main(int argc, char **argv) {
     clinet_config
         .burst_size(opt_cliburst->get())
         .nworker(opt_clinworker->get());
-    papp = new HotStuffApp(opt_fairness_parameter->get(),
+    papp = new HotStuffApp(opt_fairness_parameter->get(),   // Themis
                         opt_blk_size->get(),
                         opt_stat_period->get(),
                         opt_imp_timeout->get(),
@@ -293,12 +293,12 @@ int main(int argc, char **argv) {
     ev_sigint.add(SIGINT);
     ev_sigterm.add(SIGTERM);
 
-    papp->start(reps, opt_fairness_parameter->get());
+    papp->start(reps, opt_fairness_parameter->get());  // Themis
     elapsed.stop(true);
     return 0;
 }
 
-HotStuffApp::HotStuffApp(double fairness_parameter,
+HotStuffApp::HotStuffApp(double fairness_parameter,  // Themis
                         uint32_t blk_size,
                         double stat_period,
                         double impeach_timeout,
@@ -351,7 +351,7 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
     });
 }
 
-void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps, double fairness_parameter) {
+void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps, double fairness_parameter) {  // Themis
     ev_stat_timer = TimerEvent(ec, [this](TimerEvent &) {
         HotStuff::print_stat();
         HotStuffApp::print_stat();
@@ -369,7 +369,7 @@ void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytea
     HOTSTUFF_LOG_INFO("blk_size = %lu", blk_size);
     HOTSTUFF_LOG_INFO("conns = %lu", HotStuff::size());
     HOTSTUFF_LOG_INFO("** starting the event loop...");
-    HotStuff::start(reps, fairness_parameter);
+    HotStuff::start(reps, fairness_parameter);      // Themis
     cn.reg_conn_handler([this](const salticidae::ConnPool::conn_t &_conn, bool connected) {
         auto conn = salticidae::static_pointer_cast<conn_t::type>(_conn);
         if (connected)

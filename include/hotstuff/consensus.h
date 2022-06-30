@@ -81,7 +81,7 @@ class HotStuffCore {
 
     /** Call to initialize the protocol, should be called once before all other
      * functions. */
-    void on_init(uint32_t nfaulty, double fairness_parameter);
+    void on_init(uint32_t nfaulty, double fairness_parameter);  // Themis
 
     /* TODO: better name for "delivery" ? */
     /** Call to inform the state machine that a block is ready to be handled.
@@ -114,8 +114,8 @@ class HotStuffCore {
     void on_receive_local_order (const LocalOrder &local_order);
     /** FairPropose() **/
     void FairPropose();
-    uint16_t get_non_blank_tx_threshold();
-    uint16_t get_tx_edge_threshold();
+    double get_non_blank_tx_threshold();
+    double get_tx_edge_threshold();
 
     /* Functions required to construct concrete instances for abstract classes.
      * */

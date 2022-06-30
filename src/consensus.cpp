@@ -302,28 +302,38 @@ void HotStuffCore::FairPropose() {
     
 }
 
-// Themis
-uint16_t HotStuffCore::get_non_blank_tx_threshold() {
-    size_t nmajority = config.nmajority;
-    size_t n = config.nreplicas;
-    size_t f = n - nmajority;
-
-}
-
-// Themis
-uint16_t HotStuffCore::get_tx_edge_threshold() {
-
-}
-
 /*** end HotStuff protocol logic ***/
-void HotStuffCore::on_init(uint32_t nfaulty, double fairness_parameter) {
+void HotStuffCore::on_init(uint32_t nfaulty, double fairness_parameter) {   // Themis
     config.nmajority = config.nreplicas - nfaulty;
-    config.fairness_parameter = fairness_parameter;
+    config.fairness_parameter = fairness_parameter;                 // Themis
+    /** Do not switch below 2 statements with above 2 statements **/
+    config.non_blank_tx_threshold = get_non_blank_tx_threshold();   // Themis
+    config.tx_edge_threshold = get_tx_edge_threshold();             // Themis
     b0->qc = create_quorum_cert(b0->get_hash());
     b0->qc->compute();
     b0->self_qc = b0->qc->clone();
     b0->qc_ref = b0;
     hqc = std::make_pair(b0, b0->qc->clone());
+}
+
+// Themis
+double HotStuffCore::get_non_blank_tx_threshold() {
+    size_t nmajority = config.nmajority;
+    size_t n = config.nreplicas;
+    size_t f = n - nmajority;
+    double gama = config.fairness_parameter;
+    double solid = n - 2.0*f + 1.0;
+    double shaded = n * (1.0-gama) + f + 1.0;
+    return solid > shaded ? shaded : solid;
+}
+
+// Themis
+double HotStuffCore::get_tx_edge_threshold() {
+    size_t nmajority = config.nmajority;
+    size_t n = config.nreplicas;
+    size_t f = n - nmajority;
+    double gama = config.fairness_parameter;
+    return n * (1.0-gama) + f + 1.0;
 }
 
 void HotStuffCore::prune(uint32_t staleness) {

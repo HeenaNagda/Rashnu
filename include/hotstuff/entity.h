@@ -62,11 +62,15 @@ class ReplicaConfig {
     public:
     size_t nreplicas;
     size_t nmajority;
-    double fairness_parameter;
+    double fairness_parameter;      // Themis
+    double non_blank_tx_threshold;  // Themis
+    double tx_edge_threshold;       // Themis
 
-    ReplicaConfig(): nreplicas(0), nmajority(0), fairness_parameter(1) {
-        // Cterate non blank transaction threshold
-    }
+    ReplicaConfig(): nreplicas(0), 
+                        nmajority(0), 
+                        fairness_parameter(1), 
+                        non_blank_tx_threshold(0), 
+                        tx_edge_threshold(0) {}   // Themis
 
     void add_replica(ReplicaID rid, const ReplicaInfo &info) {
         replica_map.insert(std::make_pair(rid, info));
