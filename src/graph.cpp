@@ -51,6 +51,10 @@ namespace hotstuff {
         }
     }
 
+    std::unordered_set<uint256_t> CondensationGraph::get_decendents_from_transposed_graph(uint256_t tx) {
+        return transposed_graph[tx];
+    }
+
     std::vector<std::vector<uint256_t>> CondensationGraph::get_condensation_graph() {
         /* Order vertices by their finish time */
         for(auto const &entry: graph) {

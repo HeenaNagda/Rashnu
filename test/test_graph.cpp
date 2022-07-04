@@ -30,7 +30,7 @@ void test1(){
 
 
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;
-    const uint256_t opcode = 0x1;
+    uint256_t* n3 = uint256_new();
     // uint256_t n0 = salticidae::get_hash(0);
     uint256_t n1 = salticidae::get_hash(1);
     // uint256_t n2 = salticidae::get_hash(2);

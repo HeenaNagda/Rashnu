@@ -113,9 +113,10 @@ class HotStuffCore {
     /** Called when local order is received on Leader from a Replica  **/
     void on_receive_local_order (const LocalOrder &local_order);
     /** FairPropose() **/
-    void FairPropose();
-    double get_non_blank_tx_threshold();
-    double get_tx_edge_threshold();
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> fairPropose();                 // Themis
+    double get_solid_tx_threshold();    // Themis
+    double get_non_blank_tx_threshold();// Themis
+    double get_tx_edge_threshold();     // Themis
 
     /* Functions required to construct concrete instances for abstract classes.
      * */

@@ -63,12 +63,14 @@ class ReplicaConfig {
     size_t nreplicas;
     size_t nmajority;
     double fairness_parameter;      // Themis
+    double solid_tx_threshold;      // Themis
     double non_blank_tx_threshold;  // Themis
     double tx_edge_threshold;       // Themis
 
     ReplicaConfig(): nreplicas(0), 
                         nmajority(0), 
                         fairness_parameter(1), 
+                        solid_tx_threshold(0),
                         non_blank_tx_threshold(0), 
                         tx_edge_threshold(0) {}   // Themis
 

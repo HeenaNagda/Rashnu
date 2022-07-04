@@ -20,6 +20,7 @@
 
 #include "hotstuff/util.h"
 #include "hotstuff/consensus.h"
+#include "hotstuff/graph.h"
 
 #define LOG_INFO HOTSTUFF_LOG_INFO
 #define LOG_DEBUG HOTSTUFF_LOG_DEBUG
@@ -280,14 +281,15 @@ void HotStuffCore::on_receive_local_order (const LocalOrder &local_order) {
     qsize = storage->get_local_order_cache_size();
     if(qsize == config.nmajority){
         // FairPropose()
+        std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph = fairPropose();
         // FairUpdate()
     }
 }
 
 // Themis
-void HotStuffCore::FairPropose() {
+std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fairPropose() {
     
-    /** (1) get those replicas that have sent their local order to the Leader **/
+    /** (1) get those replicas from which Leader has received their local order **/
     std::vector<ReplicaID> replicas = storage->get_local_order_replia_vector();
 
     /** (2) Create an empty graph G = (V,E) **/
@@ -302,10 +304,16 @@ void HotStuffCore::FairPropose() {
         }
     }
     /* find non blank transactions and add them to the graph */
+    std::unordered_set<uint256_t> solid_tx_set;
     for(auto &tx: tx_count){
-        if(tx.second * 1.0 >= config.non_blank_tx_threshold){
+        uint256_t hash = tx.first;
+        double count = tx.second * 1.0;
+        if(count >= config.non_blank_tx_threshold) {
             /** this is a non blank transaction **/
-            graph.insert(std::make_pair(tx.first, std::unordered_set<uint256_t>()));
+            graph.insert(std::make_pair(hash, std::unordered_set<uint256_t>()));
+        }
+        if(count >= config.solid_tx_threshold) {
+            solid_tx_set.insert(hash);
         }
     }
 
@@ -315,16 +323,17 @@ void HotStuffCore::FairPropose() {
     for(ReplicaID replica: replicas){
         std::vector<uint256_t> ordered_hash = storage->get_ordered_hash_vector(replica);
         size_t len = ordered_hash.size();
-        for(size_t i=0; i<len; i++) {
-            for(size_t j=i+1; j<len; j++){
-                edge_count[ordered_hash[i]][ordered_hash[j]]++;
+        for(size_t from=0; from<len; from++) {
+            for(size_t to=from+1; to<len; to++){
+                edge_count[ordered_hash[from]][ordered_hash[to]]++;
             }
         }
     }
     /* add edges where k>=n(1-gama)+f+1 {>= tx_edge_threshold} */
     for(auto &from : edge_count){
         for(auto &to : from.second){
-            uint256_t from_v = from.first, to_v = to.first;
+            uint256_t from_v = from.first;
+            uint256_t to_v = to.first;
             uint16_t occurance = to.second;
             if(1.0 * occurance >= config.tx_edge_threshold
                 && graph[to_v].count(from_v)==0){ 
@@ -334,15 +343,46 @@ void HotStuffCore::FairPropose() {
         }
     }
     /** (5) Compute the condensation graph G* **/
-    
-    
+    CondensationGraph utility_obj = CondensationGraph(graph);
+    std::vector<std::vector<uint256_t>> topo_sorted_cond_graph = utility_obj.get_condensation_graph();
+
+    /** (6) Find the Last vertex `V` in S that has solid transaction. **/
+    size_t n_scc = topo_sorted_cond_graph.size();
+    int scc_i=0;
+    for( ; scc_i<n_scc; scc_i++){
+        bool solid_found=false;
+        for(auto const &tx: topo_sorted_cond_graph[scc_i]){
+            if(solid_tx_set.count(tx)>0){
+                solid_found = true;
+                break;
+            }
+        }
+        if(!solid_found){
+            break;
+        }
+    }
+
+    /** (7) Remove those transactions from G, that are part of vertices after V in S **/
+    for( ; scc_i<n_scc; scc_i++){
+        for(auto const &tx: topo_sorted_cond_graph[scc_i]){
+            /* remove this tx from original graph */
+            graph.erase(tx);
+            for(auto const &child: utility_obj.get_decendents_from_transposed_graph(tx)){
+                graph[child].erase(tx);
+            }
+        }
+    }
+
+    /** (8) Output G **/
+    return graph;
 }
 
 /*** end HotStuff protocol logic ***/
 void HotStuffCore::on_init(uint32_t nfaulty, double fairness_parameter) {   // Themis
     config.nmajority = config.nreplicas - nfaulty;
     config.fairness_parameter = fairness_parameter;                 // Themis
-    /** Do not switch below 2 statements with above 2 statements **/
+    /** Do not switch below 3 statements with above 2 statements **/
+    config.solid_tx_threshold = get_solid_tx_threshold();           // Themis
     config.non_blank_tx_threshold = get_non_blank_tx_threshold();   // Themis
     config.tx_edge_threshold = get_tx_edge_threshold();             // Themis
     b0->qc = create_quorum_cert(b0->get_hash());
@@ -353,12 +393,20 @@ void HotStuffCore::on_init(uint32_t nfaulty, double fairness_parameter) {   // T
 }
 
 // Themis
+double HotStuffCore::get_solid_tx_threshold() {
+    size_t nmajority = config.nmajority;
+    size_t n = config.nreplicas;
+    size_t f = n - nmajority;
+    return n - 2.0*f;
+}
+
+// Themis
 double HotStuffCore::get_non_blank_tx_threshold() {
     size_t nmajority = config.nmajority;
     size_t n = config.nreplicas;
     size_t f = n - nmajority;
     double gama = config.fairness_parameter;
-    double solid = n - 2.0*f + 1.0;
+    double solid = n - 2.0*f;
     double shaded = n * (1.0-gama) + f + 1.0;
     return solid > shaded ? shaded : solid;
 }
