@@ -215,15 +215,28 @@ void HotStuffBase::propose_handler(MsgPropose &&msg, const Net::conn_t &conn) {
     msg.postponed_parse(this);
     auto &prop = msg.proposal;
     block_t blk = prop.blk;
+
+    HOTSTUFF_LOG_INFO("[[propose_handler (here 1)]] [R-%d] [L-%d]", get_id(), prop.proposer);
+
+    for ( auto const &g: blk->get_graph()) {
+        HOTSTUFF_LOG_INFO("[[propose_handler]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
+        for (auto const &tx: g.second){
+            HOTSTUFF_LOG_INFO("[[propose_handler]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
+        }
+    }
+
     if (!blk) return;
+    HOTSTUFF_LOG_INFO("[[propose_handler (here 1)]] [R-%d] [L-%d]", get_id(), prop.proposer);
     if (peer != get_config().get_peer_id(prop.proposer))
     {
         LOG_WARN("invalid proposal from %d", prop.proposer);
         return;
     }
+    HOTSTUFF_LOG_INFO("[[propose_handler (here 2)]] [R-%d] [L-%d]", get_id(), prop.proposer);
     promise::all(std::vector<promise_t>{
         async_deliver_blk(blk->get_hash(), peer)
     }).then([this, prop = std::move(prop)]() {
+        HOTSTUFF_LOG_INFO("[[propose_handler (here 3)]] [R-%d] [L-%d]", get_id(), prop.proposer);
         on_receive_proposal(prop);
     });
 }
@@ -288,7 +301,7 @@ void HotStuffBase::local_order_handler(MsgLocalOrder &&msg, const Net::conn_t &c
     //     on_receive_proposal(prop);
     // });
 
-    on_receive_local_order(local_order);
+    on_receive_local_order(local_order, pmaker->get_parents());
     
 }
 
@@ -411,6 +424,17 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
 }
 
 void HotStuffBase::do_broadcast_proposal(const Proposal &prop) {
+    for ( auto const &g: prop.blk->get_graph()) {
+        HOTSTUFF_LOG_INFO("[[do_broadcast_proposal]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
+        for (auto const &tx: g.second){
+            HOTSTUFF_LOG_INFO("[[do_broadcast_proposal]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
+        }
+    }
+
+    for (const auto &replica: peers){
+        HOTSTUFF_LOG_INFO("[[do_broadcast_proposal]] [R-%d] [L-%d] replica = %s", get_id(), prop.proposer, get_hex10(replica).c_str());
+    }
+
     //MsgPropose prop_msg(prop);
     pn.multicast_msg(MsgPropose(prop), peers);
     //for (const auto &replica: peers)
@@ -447,7 +471,7 @@ void HotStuffBase::do_send_local_order(ReplicaID proposer, const LocalOrder &loc
     if (proposer == get_id())
     {
         HOTSTUFF_LOG_INFO("[[do_send_local_order]] [R-%d] [L-%d] deliver LocalOrder to itself = %s", get_id(), proposer, local_order);
-        on_receive_local_order (local_order);
+        on_receive_local_order (local_order, pmaker->get_parents());
     }
     else{
         HOTSTUFF_LOG_INFO("[[do_send_local_order]] [R-%d] [L-%d] Send LocalOrder to Leader = %s", get_id(), proposer, local_order);
@@ -520,7 +544,7 @@ void HotStuffBase::start(
 
             // Themis
             local_order_buffer.push(cmd_hash);
-            HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Push commans to local buffer = 0x%x", get_id(), proposer, cmd_hash);
+            HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Push commans to local buffer = %.10s", get_id(), proposer, get_hex(cmd_hash).c_str());
             if (local_order_buffer.size() >= blk_size) {
                 std::vector<uint256_t> cmds;
                 for (uint32_t i = 0; i < blk_size; i++)
@@ -530,7 +554,7 @@ void HotStuffBase::start(
                 }
 
                 for (uint32_t i = 0; i < 1; i++){
-                    HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Created List of commands and sending to pacemaker (%d) = 0x%x", get_id(), proposer, i, cmds[i]);
+                    HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Created List of commands and sending to pacemaker (%d) = %.10s", get_id(), proposer, i, get_hex(cmds[i]).c_str());
                 }
                 pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {
                     on_local_order(proposer, cmds);

@@ -103,7 +103,9 @@ class HotStuffCore {
     /** Call to submit new commands to be decided (executed). "Parents" must
      * contain at least one block, and the first block is the actual parent,
      * while the others are uncles/aunts */
-    block_t on_propose(const std::vector<uint256_t> &cmds,
+    block_t on_propose(/* const std::vector<uint256_t> &cmds,*/                 // Themis
+                    const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph,
+                    std::vector<std::pair<uint256_t, uint256_t>> &e_update,
                     const std::vector<block_t> &parents,
                     bytearray_t &&extra = bytearray_t());
 
@@ -111,9 +113,9 @@ class HotStuffCore {
     /** Call to submit local order to the current leader **/
     void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds);
     /** Called when local order is received on Leader from a Replica  **/
-    void on_receive_local_order (const LocalOrder &local_order);
+    void on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);
     /** FairPropose() **/
-    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> fairPropose();                 // Themis
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> fair_propose();                 // Themis
     double get_solid_tx_threshold();    // Themis
     double get_non_blank_tx_threshold();// Themis
     double get_tx_edge_threshold();     // Themis
@@ -199,16 +201,20 @@ struct Proposal: public Serializable {
         blk(blk), hsc(hsc) {}
 
     void serialize(DataStream &s) const override {
+        HOTSTUFF_LOG_INFO("[[Proposal Serialize Start]]");
         s << proposer
           << *blk;
+        HOTSTUFF_LOG_INFO("[[Proposal Serialize Ends]]");
     }
 
     void unserialize(DataStream &s) override {
+        HOTSTUFF_LOG_INFO("[[Proposal UnSerialize Start]]");
         assert(hsc != nullptr);
         s >> proposer;
         Block _blk;
         _blk.unserialize(s, hsc);
         blk = hsc->storage->add_blk(std::move(_blk), hsc->get_config());
+        HOTSTUFF_LOG_INFO("[[Proposal UnSerialize Ends]]");
     }
 
     operator std::string () const {

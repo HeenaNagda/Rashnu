@@ -128,7 +128,9 @@ get_hashes(const std::vector<Hashable> &plist) {
 class Block {
     friend HotStuffCore;
     std::vector<uint256_t> parent_hashes;
-    std::vector<uint256_t> cmds;
+    // std::vector<uint256_t> cmds;                                         // Themis
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;     // Themis
+    std::vector<std::pair<uint256_t, uint256_t>> e_update;                  // Themis
     quorum_cert_bt qc;
     bytearray_t extra;
 
@@ -158,7 +160,9 @@ class Block {
         delivered(delivered), decision(decision) {}
 
     Block(const std::vector<block_t> &parents,
-        const std::vector<uint256_t> &cmds,
+        // const std::vector<uint256_t> &cmds,                                  // Themis
+        std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph,     // Themis
+        std::vector<std::pair<uint256_t, uint256_t>> e_update,                  // Themis
         quorum_cert_bt &&qc,
         bytearray_t &&extra,
         uint32_t height,
@@ -166,7 +170,9 @@ class Block {
         quorum_cert_bt &&self_qc,
         int8_t decision = 0):
             parent_hashes(get_hashes(parents)),
-            cmds(cmds),
+            // cmds(cmds),          // Themis
+            graph(graph),           // Themis
+            e_update(e_update),     // Themis
             qc(std::move(qc)),
             extra(std::move(extra)),
             hash(salticidae::get_hash(*this)),
@@ -181,8 +187,19 @@ class Block {
 
     void unserialize(DataStream &s, HotStuffCore *hsc);
 
-    const std::vector<uint256_t> &get_cmds() const {
-        return cmds;
+    // Themis
+    // const std::vector<uint256_t> &get_cmds() const {
+    //     return cmds;
+    // }
+
+    // Themis
+    const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &get_graph() const {
+        return graph;
+    }
+
+    // Themis
+    const std::vector<std::pair<uint256_t, uint256_t>> &get_e_update() const {
+        return e_update;
     }
 
     const std::vector<block_t> &get_parents() const {

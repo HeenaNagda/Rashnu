@@ -92,7 +92,9 @@ void HotStuffCore::update_hqc(const block_t &_hqc, const quorum_cert_bt &qc) {
     }
 }
 
+// TODO: Themis
 void HotStuffCore::update(const block_t &nblk) {
+#if 0
     /* nblk = b*, blk2 = b'', blk1 = b', blk = b */
 #ifndef HOTSTUFF_TWO_STEP
     /* three-step HotStuff */
@@ -150,9 +152,12 @@ void HotStuffCore::update(const block_t &nblk) {
                                 blk->cmds[i], blk->get_hash()));
     }
     b_exec = blk;
+#endif
 }
 
-block_t HotStuffCore::on_propose(const std::vector<uint256_t> &cmds,
+block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/               // Themis
+                            const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph,
+                            std::vector<std::pair<uint256_t, uint256_t>> &e_update,
                             const std::vector<block_t> &parents,
                             bytearray_t &&extra) {
     if (parents.empty())
@@ -160,7 +165,7 @@ block_t HotStuffCore::on_propose(const std::vector<uint256_t> &cmds,
     for (const auto &_: parents) tails.erase(_);
     /* create the new block */
     block_t bnew = storage->add_blk(
-        new Block(parents, cmds,
+        new Block(parents, /*cmds,*/ graph, e_update,
             hqc.second->clone(), std::move(extra),
             parents[0]->height + 1,
             hqc.first,
@@ -175,6 +180,12 @@ block_t HotStuffCore::on_propose(const std::vector<uint256_t> &cmds,
     if (bnew->height <= vheight)
         throw std::runtime_error("new block should be higher than vheight");
     /* self-receive the proposal (no need to send it through the network) */
+    for ( auto const &g: bnew->get_graph()) {
+        HOTSTUFF_LOG_INFO("[[on_propose]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
+        for (auto const &tx: g.second){
+            HOTSTUFF_LOG_INFO("[[on_propose]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
+        }
+    }
     on_receive_proposal(prop);
     on_propose_(prop);
     /* boradcast to other replicas */
@@ -186,6 +197,15 @@ void HotStuffCore::on_receive_proposal(const Proposal &prop) {
     LOG_PROTO("got %s", std::string(prop).c_str());
     bool self_prop = prop.proposer == get_id();
     block_t bnew = prop.blk;
+
+    auto const &graph = bnew->get_graph();
+    for ( auto const &g: graph) {
+        HOTSTUFF_LOG_INFO("[[on_receive_proposal Start]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
+        for (auto const &tx: g.second){
+            HOTSTUFF_LOG_INFO("[[on_receive_proposal Start]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
+        }
+    }
+
     if (!self_prop)
     {
         sanity_check_delivered(bnew);
@@ -261,34 +281,37 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
 }
 
 // Themis
-void HotStuffCore::on_receive_local_order (const LocalOrder &local_order) {
+void HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents) {
     LOG_PROTO("got %s", std::string(local_order).c_str());
     LOG_PROTO("now state: %s", std::string(*this).c_str());
 
-    HOTSTUFF_LOG_INFO("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder on Leader (first ordered hash)= 0x%x", local_order.initiator, get_id(), local_order.ordered_hashes[0]);
+    HOTSTUFF_LOG_INFO("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder on Leader (first ordered hash)= %.10s", local_order.initiator, get_id(), get_hex(local_order.ordered_hashes[0]).c_str());
 
 
     // TODO: if this is not a leader then ignore the request/ message 
 
-    // wait for majority of replicas
+    /** wait for majority of replicas **/
     size_t qsize = storage->get_local_order_cache_size();
     if(qsize >= config.nmajority) { return; }
     
-    // add new local order to the storage
+    /** add new local order to the storage **/
     storage->add_local_order(local_order.initiator, local_order.ordered_hashes, local_order.l_update);
 
-    // Trigger FairPropose() and FairUpdate()
+    /** Trigger FairPropose() and FairUpdate() **/
     qsize = storage->get_local_order_cache_size();
     if(qsize == config.nmajority){
-        // FairPropose()
-        std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph = fairPropose();
-        // FairUpdate()
+        /* FairPropose() */
+        std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph = fair_propose();
+        // TODO: Themis FairUpdate()
+        std::vector<std::pair<uint256_t, uint256_t>> e_update;
+        /** Create a new proposal block and broadcast to the replicas **/
+        on_propose(graph, e_update, parents);
     }
 }
 
 // Themis
-std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fairPropose() {
-    
+std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_propose() {
+    HOTSTUFF_LOG_INFO("[[fairPropose START]] [R-%d]", get_id());
     /** (1) get those replicas from which Leader has received their local order **/
     std::vector<ReplicaID> replicas = storage->get_local_order_replia_vector();
 
@@ -346,6 +369,14 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fairP
     CondensationGraph utility_obj = CondensationGraph(graph);
     std::vector<std::vector<uint256_t>> topo_sorted_cond_graph = utility_obj.get_condensation_graph();
 
+    for (auto const &scc: topo_sorted_cond_graph){
+        HOTSTUFF_LOG_INFO("[[fairPropose SCC start]] [R-%d]", get_id());
+        for(auto const &tx: scc){
+            HOTSTUFF_LOG_INFO("[[fairPropose SCC]] [R-%d] tx = %.10s", get_id(), get_hex(tx).c_str());
+        }
+    }
+    
+
     /** (6) Find the Last vertex `V` in S that has solid transaction. **/
     size_t n_scc = topo_sorted_cond_graph.size();
     int scc_i=0;
@@ -374,6 +405,12 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fairP
     }
 
     /** (8) Output G **/
+    for ( auto const &g: graph) {
+        HOTSTUFF_LOG_INFO("[[fairPropose END]] [R-%d] key = %.10s", get_id(), get_hex(g.first).c_str());
+        for (auto const &tx: g.second){
+            HOTSTUFF_LOG_INFO("[[fairPropose END]] [R-%d] val = %.10s", get_id(), get_hex(tx).c_str());
+        }
+    }
     return graph;
 }
 
@@ -385,6 +422,7 @@ void HotStuffCore::on_init(uint32_t nfaulty, double fairness_parameter) {   // T
     config.solid_tx_threshold = get_solid_tx_threshold();           // Themis
     config.non_blank_tx_threshold = get_non_blank_tx_threshold();   // Themis
     config.tx_edge_threshold = get_tx_edge_threshold();             // Themis
+    HOTSTUFF_LOG_INFO("[[on_init]] [R-%d]  nmajority = %d, fairness_parameter = %f, solid_tx_threshold = %f, non_blank_tx_threshold = %f, tx_edge_threshold = %f", get_id(), config.nmajority, config.fairness_parameter, config.solid_tx_threshold, config.non_blank_tx_threshold, config.tx_edge_threshold);
     b0->qc = create_quorum_cert(b0->get_hash());
     b0->qc->compute();
     b0->self_qc = b0->qc->clone();

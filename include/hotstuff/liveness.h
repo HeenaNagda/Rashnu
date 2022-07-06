@@ -289,7 +289,9 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         });
     }
 
+    // TODO: Themis
     void do_new_consensus(int x, const std::vector<uint256_t> &cmds) {
+        /*
         auto blk = hsc->on_propose(cmds, get_parents(), bytearray_t());
         pm_qc_manual.reject();
         (pm_qc_manual = hsc->async_qc_finish(blk))
@@ -302,6 +304,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
 #endif
                 do_new_consensus(x + 1, std::vector<uint256_t>{});
             });
+            */
     }
 
     void on_exp_timeout(TimerEvent &) {
