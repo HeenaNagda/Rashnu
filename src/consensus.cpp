@@ -94,27 +94,34 @@ void HotStuffCore::update_hqc(const block_t &_hqc, const quorum_cert_bt &qc) {
 
 // TODO: Themis
 void HotStuffCore::update(const block_t &nblk) {
-#if 0
     /* nblk = b*, blk2 = b'', blk1 = b', blk = b */
+    HOTSTUFF_LOG_INFO("[[update Start]] [R-%d] [L-]", get_id());
 #ifndef HOTSTUFF_TWO_STEP
     /* three-step HotStuff */
     const block_t &blk2 = nblk->qc_ref;
     if (blk2 == nullptr) return;
+    HOTSTUFF_LOG_INFO("[[update 1]]");
     /* decided blk could possible be incomplete due to pruning */
     if (blk2->decision) return;
+    HOTSTUFF_LOG_INFO("[[update 2]]");
     update_hqc(blk2, nblk->qc);
 
     const block_t &blk1 = blk2->qc_ref;
     if (blk1 == nullptr) return;
+    HOTSTUFF_LOG_INFO("[[update 3]]");
     if (blk1->decision) return;
+    HOTSTUFF_LOG_INFO("[[update 4]]");
     if (blk1->height > b_lock->height) b_lock = blk1;
 
     const block_t &blk = blk1->qc_ref;
     if (blk == nullptr) return;
+    HOTSTUFF_LOG_INFO("[[update 5]]");
     if (blk->decision) return;
+    HOTSTUFF_LOG_INFO("[[update 6]]");
 
     /* commit requires direct parent */
     if (blk2->parents[0] != blk1 || blk1->parents[0] != blk) return;
+    HOTSTUFF_LOG_INFO("[[update 7]]");
 #else
     /* two-step HotStuff */
     const block_t &blk1 = nblk->qc_ref;
@@ -130,6 +137,7 @@ void HotStuffCore::update(const block_t &nblk) {
     /* commit requires direct parent */
     if (blk1->parents[0] != blk) return;
 #endif
+    /* b0 - - - - -> blk -> blk1 -> blk2 */
     /* otherwise commit */
     std::vector<block_t> commit_queue;
     block_t b;
@@ -144,16 +152,73 @@ void HotStuffCore::update(const block_t &nblk) {
     for (auto it = commit_queue.rbegin(); it != commit_queue.rend(); it++)
     {
         const block_t &blk = *it;
+
+        // Themis
+        auto const &order = fair_finalize(blk, nblk->get_e_update());
+        if(order.empty() && !blk->get_graph().empty()) {
+            /* this is not a tournament graph: stop looking at further blocks */
+            break;
+        }
+
+        // Themis
         blk->decision = 1;
         do_consensus(blk);
         LOG_PROTO("commit %s", std::string(*blk).c_str());
-        for (size_t i = 0; i < blk->cmds.size(); i++)
-            do_decide(Finality(id, 1, i, blk->height,
-                                blk->cmds[i], blk->get_hash()));
+        size_t n = order.size();
+        for (size_t i=0; i<n; i++) {
+            do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
+        }
+        b_exec = *it;
+
+        HOTSTUFF_LOG_INFO("[[update Decided]] [R-%d] [L-]", get_id());
+
+        // blk->decision = 1;
+        // do_consensus(blk);
+        // LOG_PROTO("commit %s", std::string(*blk).c_str());
+        // for (size_t i = 0; i < blk->cmds.size(); i++)
+        //     do_decide(Finality(id, 1, i, blk->height,
+        //                         blk->cmds[i], blk->get_hash()));
     }
-    b_exec = blk;
-#endif
+    // b_exec = blk;                        // Themis
+    HOTSTUFF_LOG_INFO("[[update Ends]] [R-%d] [L-]", get_id());
 }
+
+// Themis
+std::vector<uint256_t> HotStuffCore::
+                        fair_finalize(block_t const &blk, 
+                        std::vector<std::pair<uint256_t, uint256_t>> const &e_update){
+    auto &graph = blk->get_graph();
+    
+    /** (1) For all Bi and transactions tx, tx0 in Bi that do not have an edge between them, 
+     * if (tx; tx0) is in some Bj.e_update, then add that edge to Bi.G **/
+    for(auto const &edge: e_update){
+        if(graph.count(edge.first)>0 && graph.count(edge.second)>0){
+            /* nodes exists but edge does not exists: update these edges */
+            blk->update_graph(edge);
+        }
+    }
+
+    /** (2) is graph B.G is a tournament **/
+    if(!blk->is_tournament_graph()){
+        /* Graph is not a tournament graph */
+        return std::vector<uint256_t>();
+    }
+
+    /** (3) Compute the condensation graph of B.G, and topological sorting S **/
+    CondensationGraph util_obj = CondensationGraph(blk->get_graph());
+    auto const &sccs = util_obj.get_condensation_graph();
+    /* Finalize a Global Order */
+    /* TODO: Handle condorset cycles */
+    std::vector<uint256_t> order;
+    for (auto const &scc: sccs) {
+        for (auto const &cmd: scc) {
+            order.push_back(cmd);
+        }
+    }
+    return order;
+}
+
+
 
 block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/               // Themis
                             const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph,
@@ -171,6 +236,14 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
             hqc.first,
             nullptr
         ));
+
+    if(bnew->get_qc_ref()==nullptr){
+        HOTSTUFF_LOG_INFO("[[on_propose]] [R-%d] [L-]  block hqc = %.10s, Decision = %d", get_id(), "null", bnew->get_decision());
+    }
+    else{
+        HOTSTUFF_LOG_INFO("[[on_propose]] [R-%d] [L-] block hqc = %.10s, Decision = %d", get_id(), get_hex(bnew->get_qc_ref()->get_hash()).c_str(), bnew->get_decision());
+    }
+    
     const uint256_t bnew_hash = bnew->get_hash();
     bnew->self_qc = create_quorum_cert(bnew_hash);
     on_deliver_blk(bnew);
@@ -209,7 +282,9 @@ void HotStuffCore::on_receive_proposal(const Proposal &prop) {
     if (!self_prop)
     {
         sanity_check_delivered(bnew);
+        HOTSTUFF_LOG_INFO("[[on_receive_proposal Before Update]] [R-%d] [L-%d]", get_id(), prop.proposer);
         update(bnew);
+        HOTSTUFF_LOG_INFO("[[on_receive_proposal After Update]] [R-%d] [L-%d]", get_id(), prop.proposer);
     }
     bool opinion = false;
     if (bnew->height > vheight)
@@ -236,10 +311,13 @@ void HotStuffCore::on_receive_proposal(const Proposal &prop) {
     if (!self_prop && bnew->qc_ref)
         on_qc_finish(bnew->qc_ref);
     on_receive_proposal_(prop);
-    if (opinion && !vote_disabled)
+    if (opinion && !vote_disabled){
+        HOTSTUFF_LOG_INFO("[[on_receive_proposal Start Vote]] [R-%d] [L-%d]", get_id(), prop.proposer);
         do_vote(prop.proposer,
             Vote(id, bnew->get_hash(),
                 create_part_cert(*priv_key, bnew->get_hash()), this));
+    }
+        
 }
 
 void HotStuffCore::on_receive_vote(const Vote &vote) {

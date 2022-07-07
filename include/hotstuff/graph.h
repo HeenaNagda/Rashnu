@@ -38,7 +38,7 @@ class CondensationGraph {
     void generate_scc(uint256_t vertex, std::vector<uint256_t> &);
 
     public:
-    CondensationGraph(std::unordered_map<uint256_t, std::unordered_set<uint256_t>>&);
+    CondensationGraph(std::unordered_map<uint256_t, std::unordered_set<uint256_t>> const&);
     std::vector<std::vector<uint256_t>> get_condensation_graph();
     std::unordered_set<uint256_t> get_decendents_from_transposed_graph(uint256_t tx);
 };

@@ -198,6 +198,36 @@ class Block {
     }
 
     // Themis
+    void update_graph(std::pair<uint256_t, uint256_t> const &edge){
+        graph[edge.first].insert(edge.second);
+    }
+
+    // Themis
+    bool is_tournament_graph() {
+        /* Get all the nodes */
+        std::vector<uint256_t> nodes;
+        for (auto const &g: graph) {
+            nodes.push_back(g.first);
+        }
+
+        /* Check if there is exactly one edge between any 2 pair of vertices */
+        size_t n = nodes.size();
+        uint256_t node_1, node_2;
+        for (size_t i=0; i<n; i++) {
+            node_1 = nodes[i];
+            for (size_t j=i+1; j<n; j++) {
+                node_2 = nodes[j];
+                if(graph[node_1].count(node_2)==0 && graph[node_2].count(node_1)==0) {
+                    // no edge found between these two nodes
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // Themis
     const std::vector<std::pair<uint256_t, uint256_t>> &get_e_update() const {
         return e_update;
     }

@@ -27,7 +27,7 @@
 #define LOG_PROTO HOTSTUFF_LOG_PROTO
 
 namespace hotstuff {
-    CondensationGraph::CondensationGraph(std::unordered_map<uint256_t, std::unordered_set<uint256_t>>& graph){
+    CondensationGraph::CondensationGraph(std::unordered_map<uint256_t, std::unordered_set<uint256_t>> const& graph){
         CondensationGraph::graph = graph;
         reset_visited();
         create_transposed_graph();

@@ -291,8 +291,10 @@ class PMRoundRobinProposer: virtual public PaceMaker {
 
     // TODO: Themis
     void do_new_consensus(int x, const std::vector<uint256_t> &cmds) {
-        /*
-        auto blk = hsc->on_propose(cmds, get_parents(), bytearray_t());
+        // TODO: Themis : instead of having empty graph, it should by passed through this method itself
+        std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;
+        std::vector<std::pair<uint256_t, uint256_t>> e_update;
+        auto blk = hsc->on_propose(graph, e_update, get_parents(), bytearray_t());
         pm_qc_manual.reject();
         (pm_qc_manual = hsc->async_qc_finish(blk))
             .then([this, x]() {
@@ -304,7 +306,6 @@ class PMRoundRobinProposer: virtual public PaceMaker {
 #endif
                 do_new_consensus(x + 1, std::vector<uint256_t>{});
             });
-            */
     }
 
     void on_exp_timeout(TimerEvent &) {
@@ -353,7 +354,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
                 std::vector<uint256_t> cmds;
                 for (auto &p: pending)
                     cmds.push_back(p.first);
-                do_new_consensus(0, cmds);
+                // do_new_consensus(0, cmds);       // TODO: Themis
             });
         }
     }

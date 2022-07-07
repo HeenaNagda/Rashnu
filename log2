@@ -1,180 +1,549 @@
-2022-07-05 17:40:32.890709 [net info] loaded configuration from hotstuff.conf
-2022-07-05 17:40:32.899251 [net info] loading extra configuration from ./hotstuff-sec2.conf
-2022-07-05 17:40:32.936602 [hotstuff info] [[Block Serialize : parent size = 0]]
-2022-07-05 17:40:32.938202 [hotstuff info] [[Block Serialize : graph size = 0]]
-2022-07-05 17:40:32.938388 [hotstuff info] [[Block Serialize : e_update size = 0]]
-2022-07-05 17:40:32.942684 [net info] starting all threads...
-2022-07-05 17:40:32.944268 [net info] listening to 10002
-2022-07-05 17:40:32.950376 [net info] starting all threads...
-2022-07-05 17:40:32.951839 [net info] accepted <Conn fd=82 addr=<NetAddr 127.0.0.1:41906> mode=passive>
-2022-07-05 17:40:32.954473 [net info] listening to 20002
-2022-07-05 17:40:32.954613 [hotstuff info] ** starting the system with parameters **
-2022-07-05 17:40:32.954661 [hotstuff info] blk_size = 4
-2022-07-05 17:40:32.954704 [hotstuff info] conns = 0
-2022-07-05 17:40:32.954745 [hotstuff info] ** starting the event loop...
-2022-07-05 17:40:32.954834 [hotstuff info] [[on_init]] [R-2]  nmajority = 3, fairness_parameter = 1.000000, solid_tx_threshold = 2.000000, non_blank_tx_threshold = 2.000000, tx_edge_threshold = 2.000000
-2022-07-05 17:40:32.954892 [hotstuff proto] Pacemaker: stop rotation at 0
-2022-07-05 17:40:32.964744 [net info] created <Conn fd=88 addr=<NetAddr 127.0.0.1:10000> mode=active>
-2022-07-05 17:40:32.964967 [net info] created <Conn fd=90 addr=<NetAddr 127.0.0.1:10001> mode=active>
-2022-07-05 17:40:32.965156 [net info] created <Conn fd=92 addr=<NetAddr 127.0.0.1:10003> mode=active>
-2022-07-05 17:40:32.965330 [net info] accepted <Conn fd=94 addr=<NetAddr 127.0.0.1:41910> mode=passive>
-2022-07-05 17:40:32.965355 [net info] connected to remote <Conn fd=88 addr=<NetAddr 127.0.0.1:10000> mode=active>
-2022-07-05 17:40:32.965367 [net info] connected to remote <Conn fd=90 addr=<NetAddr 127.0.0.1:10001> mode=active>
-2022-07-05 17:40:32.965376 [net info] connected to remote <Conn fd=92 addr=<NetAddr 127.0.0.1:10003> mode=active>
-2022-07-05 17:40:32.974454 [net info] 065b010aed: setup connection <Conn fd=88 addr=<NetAddr 127.0.0.1:10000> mode=active>
-2022-07-05 17:40:32.974520 [net info] 065b010aed: setup connection <Conn fd=82 addr=<NetAddr 127.0.0.1:41906> mode=passive>
-2022-07-05 17:40:32.982133 [net info] 065b010aed: setup connection <Conn fd=94 addr=<NetAddr 127.0.0.1:41910> mode=passive>
-2022-07-05 17:40:32.982163 [net info] 065b010aed: setup connection <Conn fd=92 addr=<NetAddr 127.0.0.1:10003> mode=active>
-2022-07-05 17:40:32.984022 [net info] established 065b010aed <---> c261250345 (via <Conn fd=82 addr=<NetAddr 127.0.0.1:41906> mode=passive>)
-2022-07-05 17:40:32.984081 [net info] 065b010aed: setup connection <Conn fd=90 addr=<NetAddr 127.0.0.1:10001> mode=active>
-2022-07-05 17:40:32.985481 [net info] 065b010aed: lost connection <Conn fd=94 addr=<NetAddr 127.0.0.1:41910> mode=passive>
-2022-07-05 17:40:32.985656 [net info] established 065b010aed <---> 542865a568 (via <Conn fd=88 addr=<NetAddr 127.0.0.1:10000> mode=active>)
-2022-07-05 17:40:32.985672 [net info] 065b010aed: ping from <Conn fd=88 addr=<NetAddr 127.0.0.1:10000> mode=active>
-2022-07-05 17:40:32.987239 [net info] 065b010aed: ping from <Conn fd=82 addr=<NetAddr 127.0.0.1:41906> mode=passive>
-2022-07-05 17:40:32.987459 [net info] 065b010aed: lost connection <Conn fd=82 addr=<NetAddr 127.0.0.1:41906> mode=passive>
-2022-07-05 17:40:32.987478 [net info] ended 065b010aed <-/-> c261250345 (via <Conn fd=82 addr=<NetAddr 127.0.0.1:41906> mode=passive>)
-2022-07-05 17:40:32.988008 [net info] established 065b010aed <---> c261250345 (via <Conn fd=90 addr=<NetAddr 127.0.0.1:10001> mode=active>)
-2022-07-05 17:40:32.988029 [net info] 065b010aed: ping from <Conn fd=90 addr=<NetAddr 127.0.0.1:10001> mode=active>
-2022-07-05 17:40:32.989603 [net info] 065b010aed: lost connection <Conn fd=92 addr=<NetAddr 127.0.0.1:10003> mode=active>
-2022-07-05 17:40:35.324986 [net info] accepted <Conn fd=82 addr=<NetAddr 127.0.0.1:41914> mode=passive>
-2022-07-05 17:40:35.331691 [net info] 065b010aed: setup connection <Conn fd=82 addr=<NetAddr 127.0.0.1:41914> mode=passive>
-2022-07-05 17:40:35.332086 [net info] established 065b010aed <---> 6540a0fea6 (via <Conn fd=82 addr=<NetAddr 127.0.0.1:41914> mode=passive>)
-2022-07-05 17:40:35.332504 [net info] 065b010aed: ping from <Conn fd=82 addr=<NetAddr 127.0.0.1:41914> mode=passive>
-2022-07-05 17:40:37.585905 [net info] accepted <Conn fd=85 addr=<NetAddr 127.0.0.1:35834> mode=passive>
-2022-07-05 17:40:37.587901 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = af5570f5a1
-2022-07-05 17:40:37.587954 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 01acecb507
-2022-07-05 17:40:37.587977 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 2fcd151b82
-2022-07-05 17:40:37.587994 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 9ae4c9d086
-2022-07-05 17:40:37.588215 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Push commans to local buffer = af5570f5a1
-2022-07-05 17:40:37.588232 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Push commans to local buffer = 01acecb507
-2022-07-05 17:40:37.588241 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Push commans to local buffer = 2fcd151b82
-2022-07-05 17:40:37.588250 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Push commans to local buffer = 9ae4c9d086
-2022-07-05 17:40:37.588259 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Created List of commands and sending to pacemaker (0) = af5570f5a1
-2022-07-05 17:40:37.588266 [hotstuff info] [[on_local_order]] [R-2] [L-0] LocalOrder Object = @
-‹ÛU
-2022-07-05 17:40:37.588272 [hotstuff info] [[do_send_local_order]] [R-2] [L-0] Send LocalOrder to Leader = @
-‹ÛU
-2022-07-05 17:40:37.592266 [hotstuff info] [[Proposal UnSerialize Start]]
-2022-07-05 17:40:37.592292 [hotstuff info] [[Block Serialize : parent size = 1]]
-2022-07-05 17:40:37.592314 [hotstuff info] [[Block Serialize : parent hash = 6ef382c75193860b1da895b5a4b1712908766f44ba40ad75a018fcc39dd055c5]]
-2022-07-05 17:40:37.592324 [hotstuff info] [[Block Serialize : graph size = 4]]
-2022-07-05 17:40:37.592341 [hotstuff info] [[Block Serialize : graph key = af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc]]
-2022-07-05 17:40:37.592349 [hotstuff info] [[Block Serialize : graph key-set size = 3]]
-2022-07-05 17:40:37.592432 [hotstuff info] [[Block Serialize : graph set val = 01acecb507abfe1a354aa8064f4af5d3f1acd019e37db3c11c97523b71c76e9d]]
-2022-07-05 17:40:37.592447 [hotstuff info] [[Block Serialize : graph set val = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.592483 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.592494 [hotstuff info] [[Block Serialize : graph key = 01acecb507abfe1a354aa8064f4af5d3f1acd019e37db3c11c97523b71c76e9d]]
-2022-07-05 17:40:37.592499 [hotstuff info] [[Block Serialize : graph key-set size = 2]]
-2022-07-05 17:40:37.592508 [hotstuff info] [[Block Serialize : graph set val = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.592517 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.592527 [hotstuff info] [[Block Serialize : graph key = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.592534 [hotstuff info] [[Block Serialize : graph key-set size = 1]]
-2022-07-05 17:40:37.592561 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.592575 [hotstuff info] [[Block Serialize : graph key = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.592582 [hotstuff info] [[Block Serialize : graph key-set size = 0]]
-2022-07-05 17:40:37.592589 [hotstuff info] [[Block Serialize : e_update size = 0]]
-2022-07-05 17:40:37.592599 [hotstuff info] [[Block Serialize : parent size = 1]]
-2022-07-05 17:40:37.592629 [hotstuff info] [[Block Serialize : parent hash = 6ef382c75193860b1da895b5a4b1712908766f44ba40ad75a018fcc39dd055c5]]
-2022-07-05 17:40:37.592638 [hotstuff info] [[Block Serialize : graph size = 4]]
-2022-07-05 17:40:37.592650 [hotstuff info] [[Block Serialize : graph key = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.592657 [hotstuff info] [[Block Serialize : graph key-set size = 0]]
-2022-07-05 17:40:37.592671 [hotstuff info] [[Block Serialize : graph key = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.592677 [hotstuff info] [[Block Serialize : graph key-set size = 1]]
-2022-07-05 17:40:37.592685 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.592694 [hotstuff info] [[Block Serialize : graph key = 01acecb507abfe1a354aa8064f4af5d3f1acd019e37db3c11c97523b71c76e9d]]
-2022-07-05 17:40:37.592699 [hotstuff info] [[Block Serialize : graph key-set size = 2]]
-2022-07-05 17:40:37.592712 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.592725 [hotstuff info] [[Block Serialize : graph set val = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.592740 [hotstuff info] [[Block Serialize : graph key = af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc]]
-2022-07-05 17:40:37.592748 [hotstuff info] [[Block Serialize : graph key-set size = 3]]
-2022-07-05 17:40:37.592762 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.592776 [hotstuff info] [[Block Serialize : graph set val = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.592790 [hotstuff info] [[Block Serialize : graph set val = 01acecb507abfe1a354aa8064f4af5d3f1acd019e37db3c11c97523b71c76e9d]]
-2022-07-05 17:40:37.592799 [hotstuff info] [[Block Serialize : e_update size = 0]]
-2022-07-05 17:40:37.592818 [hotstuff info] [[Proposal UnSerialize Ends]]
-2022-07-05 17:40:37.592829 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-0]
-2022-07-05 17:40:37.592846 [hotstuff info] [[propose_handler]] [R-2] [L-0] key = 9ae4c9d086
-2022-07-05 17:40:37.592860 [hotstuff info] [[propose_handler]] [R-2] [L-0] key = 2fcd151b82
-2022-07-05 17:40:37.592874 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 9ae4c9d086
-2022-07-05 17:40:37.592888 [hotstuff info] [[propose_handler]] [R-2] [L-0] key = 01acecb507
-2022-07-05 17:40:37.592904 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 9ae4c9d086
-2022-07-05 17:40:37.592918 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 2fcd151b82
-2022-07-05 17:40:37.592931 [hotstuff info] [[propose_handler]] [R-2] [L-0] key = af5570f5a1
-2022-07-05 17:40:37.592946 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 9ae4c9d086
-2022-07-05 17:40:37.592958 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 2fcd151b82
-2022-07-05 17:40:37.592972 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 01acecb507
-2022-07-05 17:40:37.592981 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-0]
-2022-07-05 17:40:37.592990 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-0]
-2022-07-05 17:40:37.593036 [hotstuff info] [[propose_handler (here 3)]] [R-2] [L-0]
-2022-07-05 17:40:37.593063 [hotstuff proto] got <proposal rid=0 blk=123e2e0b6e>
-2022-07-05 17:40:37.593081 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] key = 9ae4c9d086
-2022-07-05 17:40:37.593096 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] key = 2fcd151b82
-2022-07-05 17:40:37.593111 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 9ae4c9d086
-2022-07-05 17:40:37.593125 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] key = 01acecb507
-2022-07-05 17:40:37.593139 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 9ae4c9d086
-2022-07-05 17:40:37.593151 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 2fcd151b82
-2022-07-05 17:40:37.593173 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] key = af5570f5a1
-2022-07-05 17:40:37.593190 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 9ae4c9d086
-2022-07-05 17:40:37.593203 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 2fcd151b82
-2022-07-05 17:40:37.593216 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 01acecb507
-2022-07-05 17:40:37.593249 [hotstuff proto] now state: <hotstuff hqc=6ef382c751 hqc.height=0 b_lock=6ef382c751 b_exec=6ef382c751 vheight=1 tails=1>
-2022-07-05 17:40:37.594134 [hotstuff info] [[Block Serialize : parent size = 1]]
-2022-07-05 17:40:37.594184 [hotstuff info] [[Block Serialize : parent hash = 6ef382c75193860b1da895b5a4b1712908766f44ba40ad75a018fcc39dd055c5]]
-2022-07-05 17:40:37.594196 [hotstuff info] [[Block Serialize : graph size = 4]]
-2022-07-05 17:40:37.594208 [hotstuff info] [[Block Serialize : graph key = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.594215 [hotstuff info] [[Block Serialize : graph key-set size = 0]]
-2022-07-05 17:40:37.594225 [hotstuff info] [[Block Serialize : graph key = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.594233 [hotstuff info] [[Block Serialize : graph key-set size = 1]]
-2022-07-05 17:40:37.594258 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.594269 [hotstuff info] [[Block Serialize : graph key = 01acecb507abfe1a354aa8064f4af5d3f1acd019e37db3c11c97523b71c76e9d]]
-2022-07-05 17:40:37.597332 [hotstuff info] [[Block Serialize : graph key-set size = 2]]
-2022-07-05 17:40:37.597348 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.597362 [hotstuff info] [[Block Serialize : graph set val = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.597373 [hotstuff info] [[Block Serialize : graph key = af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc]]
-2022-07-05 17:40:37.597378 [hotstuff info] [[Block Serialize : graph key-set size = 3]]
-2022-07-05 17:40:37.597386 [hotstuff info] [[Block Serialize : graph set val = 9ae4c9d0864c30005acac91f21015f39e35691a056d606a097c8cf8380275a17]]
-2022-07-05 17:40:37.597394 [hotstuff info] [[Block Serialize : graph set val = 2fcd151b8295e8b3bf8ec64ede173523417960a8db6cbc569de9a25a458f9135]]
-2022-07-05 17:40:37.597402 [hotstuff info] [[Block Serialize : graph set val = 01acecb507abfe1a354aa8064f4af5d3f1acd019e37db3c11c97523b71c76e9d]]
-2022-07-05 17:40:37.597408 [hotstuff info] [[Block Serialize : e_update size = 0]]
-2022-07-05 17:40:42.895888 [hotstuff info] ===== begin stats =====
-2022-07-05 17:40:42.895992 [hotstuff info] -------- queues -------
-2022-07-05 17:40:42.896006 [hotstuff info] blk_fetch_waiting: 0
-2022-07-05 17:40:42.896016 [hotstuff info] blk_delivery_waiting: 0
-2022-07-05 17:40:42.896025 [hotstuff info] decision_waiting: 4
-2022-07-05 17:40:42.896034 [hotstuff info] -------- misc ---------
-2022-07-05 17:40:42.896042 [hotstuff info] fetched: 0
-2022-07-05 17:40:42.896051 [hotstuff info] delivered: 1
-2022-07-05 17:40:42.896060 [hotstuff info] cmd_cache: 0
-2022-07-05 17:40:42.896070 [hotstuff info] blk_cache: 2
-2022-07-05 17:40:42.896079 [hotstuff info] ------ misc (10s) -----
-2022-07-05 17:40:42.896088 [hotstuff info] fetched: 0
-2022-07-05 17:40:42.896097 [hotstuff info] delivered: 1
-2022-07-05 17:40:42.896106 [hotstuff info] decided: 0
-2022-07-05 17:40:42.896116 [hotstuff info] gened: 0
-2022-07-05 17:40:42.896125 [hotstuff info] avg. parent_size: 1.000
-2022-07-05 17:40:42.896136 [hotstuff info] delivery time: 0.000 avg, 0.000 min, 0.000 max
-2022-07-05 17:40:42.896148 [hotstuff info] --- replica msg. (10s) ---
-2022-07-05 17:40:42.896298 [hotstuff info] 542865a568: 6(713), 5(479), 0
-2022-07-05 17:40:42.896444 [hotstuff info] c261250345: 3(13), 4(14), 0
-2022-07-05 17:40:42.896637 [hotstuff info] 6540a0fea6: 3(13), 3(13), 0
-2022-07-05 17:40:42.896674 [hotstuff info] sent: 12
-2022-07-05 17:40:42.896684 [hotstuff info] recv: 12
-2022-07-05 17:40:42.896690 [hotstuff info] --- replica msg. total ---
-2022-07-05 17:40:42.896696 [hotstuff info] sent: 12
-2022-07-05 17:40:42.896701 [hotstuff info] recv: 12
-2022-07-05 17:40:42.896707 [hotstuff info] ====== end stats ======
-2022-07-05 17:40:42.896712 [hotstuff info] --- client msg. (10s) ---
-2022-07-05 17:40:42.896720 [hotstuff info] <NetAddr 127.0.0.1:35834>: 0(0), 4(32)
-2022-07-05 17:40:42.896726 [hotstuff info] --- end client msg. ---
-2022-07-05 17:40:43.890816 [hotstuff proto] Pacemaker: rotate to 1
-2022-07-05 17:40:43.890868 [hotstuff info] schedule to impeach the proposer
-2022-07-05 17:40:45.929690 [hotstuff proto] Pacemaker: rotate to 2
-2022-07-05 17:40:47.146964 [net info] elapsed: 14.256 (wall) 0.046 (cpu)
-2022-07-05 17:40:47.146979 [net info] 065b010aed: lost connection <Conn fd=82 addr=<NetAddr 127.0.0.1:41914> mode=passive>
-2022-07-05 17:40:47.147006 [net info] ended 065b010aed <-/-> 6540a0fea6 (via <Conn fd=82 addr=<NetAddr 127.0.0.1:41914> mode=passive>)
-2022-07-05 17:40:47.148170 [net info] stopping all threads...
-2022-07-05 17:40:47.149563 [net info] 065b010aed: lost connection <Conn fd=90 addr=<NetAddr 127.0.0.1:10001> mode=active>
-2022-07-05 17:40:47.149584 [net info] ended 065b010aed <-/-> c261250345 (via <Conn fd=90 addr=<NetAddr 127.0.0.1:10001> mode=active>)
-2022-07-05 17:40:47.151289 [net info] stopping all threads...
-2022-07-05 17:40:47.151737 [net info] 065b010aed: lost connection <Conn fd=88 addr=<NetAddr 127.0.0.1:10000> mode=active>
-2022-07-05 17:40:47.151762 [net info] ended 065b010aed <-/-> 542865a568 (via <Conn fd=88 addr=<NetAddr 127.0.0.1:10000> mode=active>)
+2022-07-06 19:02:51.541504 [net info] loaded configuration from hotstuff.conf
+2022-07-06 19:02:51.541619 [net info] loading extra configuration from ./hotstuff-sec2.conf
+2022-07-06 19:02:51.590817 [net info] starting all threads...
+2022-07-06 19:02:51.603155 [net info] listening to 10002
+2022-07-06 19:02:51.606929 [net info] starting all threads...
+2022-07-06 19:02:51.610967 [net info] accepted <Conn fd=85 addr=<NetAddr 127.0.0.1:42040> mode=passive>
+2022-07-06 19:02:51.646430 [net info] listening to 20002
+2022-07-06 19:02:51.650566 [hotstuff info] ** starting the system with parameters **
+2022-07-06 19:02:51.650630 [hotstuff info] blk_size = 4
+2022-07-06 19:02:51.650652 [hotstuff info] conns = 0
+2022-07-06 19:02:51.650665 [hotstuff info] ** starting the event loop...
+2022-07-06 19:02:51.650794 [hotstuff info] [[on_init]] [R-2]  nmajority = 3, fairness_parameter = 1.000000, solid_tx_threshold = 2.000000, non_blank_tx_threshold = 2.000000, tx_edge_threshold = 2.000000
+2022-07-06 19:02:51.650841 [hotstuff proto] Pacemaker: stop rotation at 0
+2022-07-06 19:02:51.665804 [net info] 065b010aed: setup connection <Conn fd=85 addr=<NetAddr 127.0.0.1:42040> mode=passive>
+2022-07-06 19:02:51.666515 [net info] created <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>
+2022-07-06 19:02:51.666788 [net info] created <Conn fd=93 addr=<NetAddr 127.0.0.1:10001> mode=active>
+2022-07-06 19:02:51.667040 [net info] created <Conn fd=95 addr=<NetAddr 127.0.0.1:10003> mode=active>
+2022-07-06 19:02:51.667131 [net info] connected to remote <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>
+2022-07-06 19:02:51.667157 [net info] connected to remote <Conn fd=93 addr=<NetAddr 127.0.0.1:10001> mode=active>
+2022-07-06 19:02:51.667172 [net info] connected to remote <Conn fd=95 addr=<NetAddr 127.0.0.1:10003> mode=active>
+2022-07-06 19:02:51.667317 [net info] established 065b010aed <---> 542865a568 (via <Conn fd=85 addr=<NetAddr 127.0.0.1:42040> mode=passive>)
+2022-07-06 19:02:51.683829 [net info] 065b010aed: setup connection <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>
+2022-07-06 19:02:51.684135 [net info] accepted <Conn fd=88 addr=<NetAddr 127.0.0.1:42046> mode=passive>
+2022-07-06 19:02:51.684242 [net info] 065b010aed: ping from <Conn fd=85 addr=<NetAddr 127.0.0.1:42040> mode=passive>
+2022-07-06 19:02:51.708493 [net info] 065b010aed: setup connection <Conn fd=93 addr=<NetAddr 127.0.0.1:10001> mode=active>
+2022-07-06 19:02:51.709052 [net info] 065b010aed: lost connection <Conn fd=85 addr=<NetAddr 127.0.0.1:42040> mode=passive>
+2022-07-06 19:02:51.709086 [net info] ended 065b010aed <-/-> 542865a568 (via <Conn fd=85 addr=<NetAddr 127.0.0.1:42040> mode=passive>)
+2022-07-06 19:02:51.709860 [net info] established 065b010aed <---> 542865a568 (via <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>)
+2022-07-06 19:02:51.710049 [net info] 065b010aed: ping from <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>
+2022-07-06 19:02:51.716931 [net info] accepted <Conn fd=85 addr=<NetAddr 127.0.0.1:42050> mode=passive>
+2022-07-06 19:02:51.716974 [net info] 065b010aed: setup connection <Conn fd=88 addr=<NetAddr 127.0.0.1:42046> mode=passive>
+2022-07-06 19:02:51.718132 [net info] 065b010aed: lost connection <Conn fd=93 addr=<NetAddr 127.0.0.1:10001> mode=active>
+2022-07-06 19:02:51.726787 [net info] 065b010aed: setup connection <Conn fd=95 addr=<NetAddr 127.0.0.1:10003> mode=active>
+2022-07-06 19:02:51.741379 [net info] 065b010aed: setup connection <Conn fd=85 addr=<NetAddr 127.0.0.1:42050> mode=passive>
+2022-07-06 19:02:51.741721 [net info] established 065b010aed <---> c261250345 (via <Conn fd=85 addr=<NetAddr 127.0.0.1:42050> mode=passive>)
+2022-07-06 19:02:51.745598 [net info] 065b010aed: ping from <Conn fd=85 addr=<NetAddr 127.0.0.1:42050> mode=passive>
+2022-07-06 19:02:51.751391 [net info] established 065b010aed <---> 6540a0fea6 (via <Conn fd=88 addr=<NetAddr 127.0.0.1:42046> mode=passive>)
+2022-07-06 19:02:51.753407 [net info] 065b010aed: lost connection <Conn fd=95 addr=<NetAddr 127.0.0.1:10003> mode=active>
+2022-07-06 19:02:51.753839 [net info] 065b010aed: ping from <Conn fd=88 addr=<NetAddr 127.0.0.1:42046> mode=passive>
+2022-07-06 19:02:55.560344 [net info] accepted <Conn fd=89 addr=<NetAddr 127.0.0.1:35856> mode=passive>
+2022-07-06 19:02:55.567803 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = af5570f5a1
+2022-07-06 19:02:55.567849 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 01acecb507
+2022-07-06 19:02:55.567869 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 2fcd151b82
+2022-07-06 19:02:55.567887 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 9ae4c9d086
+2022-07-06 19:02:55.568272 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Push commans to local buffer = af5570f5a1
+2022-07-06 19:02:55.568312 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Push commans to local buffer = 01acecb507
+2022-07-06 19:02:55.568331 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Push commans to local buffer = 2fcd151b82
+2022-07-06 19:02:55.568345 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Push commans to local buffer = 9ae4c9d086
+2022-07-06 19:02:55.568361 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-0] Created List of commands and sending to pacemaker (0) = af5570f5a1
+2022-07-06 19:02:55.568372 [hotstuff info] [[on_local_order]] [R-2] [L-0] LocalOrder Object = @äò*ÌU
+2022-07-06 19:02:55.568382 [hotstuff info] [[do_send_local_order]] [R-2] [L-0] Send LocalOrder to Leader = @äò*ÌU
+2022-07-06 19:02:55.573215 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:02:55.573277 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:02:55.573296 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-0]
+2022-07-06 19:02:55.573317 [hotstuff info] [[propose_handler]] [R-2] [L-0] key = 9ae4c9d086
+2022-07-06 19:02:55.573342 [hotstuff info] [[propose_handler]] [R-2] [L-0] key = 2fcd151b82
+2022-07-06 19:02:55.573363 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 9ae4c9d086
+2022-07-06 19:02:55.573380 [hotstuff info] [[propose_handler]] [R-2] [L-0] key = 01acecb507
+2022-07-06 19:02:55.573402 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 9ae4c9d086
+2022-07-06 19:02:55.573421 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 2fcd151b82
+2022-07-06 19:02:55.573439 [hotstuff info] [[propose_handler]] [R-2] [L-0] key = af5570f5a1
+2022-07-06 19:02:55.573461 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 9ae4c9d086
+2022-07-06 19:02:55.573479 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 2fcd151b82
+2022-07-06 19:02:55.573496 [hotstuff info] [[propose_handler]] [R-2] [L-0] val = 01acecb507
+2022-07-06 19:02:55.573511 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-0]
+2022-07-06 19:02:55.573523 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-0]
+2022-07-06 19:02:55.573563 [hotstuff info] [[propose_handler (here 3)]] [R-2] [L-0]
+2022-07-06 19:02:55.573593 [hotstuff proto] got <proposal rid=0 blk=123e2e0b6e>
+2022-07-06 19:02:55.573612 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] key = 9ae4c9d086
+2022-07-06 19:02:55.573629 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] key = 2fcd151b82
+2022-07-06 19:02:55.573652 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 9ae4c9d086
+2022-07-06 19:02:55.573671 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] key = 01acecb507
+2022-07-06 19:02:55.573687 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 9ae4c9d086
+2022-07-06 19:02:55.573708 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 2fcd151b82
+2022-07-06 19:02:55.573727 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] key = af5570f5a1
+2022-07-06 19:02:55.573743 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 9ae4c9d086
+2022-07-06 19:02:55.573758 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 2fcd151b82
+2022-07-06 19:02:55.573775 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-0] val = 01acecb507
+2022-07-06 19:02:55.573784 [hotstuff info] [[on_receive_proposal Before Update]] [R-2] [L-0]
+2022-07-06 19:02:55.573805 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:02:55.573815 [hotstuff info] [[update 1]]
+2022-07-06 19:02:55.573823 [hotstuff info] [[on_receive_proposal After Update]] [R-2] [L-0]
+2022-07-06 19:02:55.573851 [hotstuff proto] now state: <hotstuff hqc=6ef382c751 hqc.height=0 b_lock=6ef382c751 b_exec=6ef382c751 vheight=1 tails=1>
+2022-07-06 19:02:55.573868 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-0]
+2022-07-06 19:03:01.544249 [hotstuff info] ===== begin stats =====
+2022-07-06 19:03:01.544310 [hotstuff info] -------- queues -------
+2022-07-06 19:03:01.544363 [hotstuff info] blk_fetch_waiting: 0
+2022-07-06 19:03:01.544379 [hotstuff info] blk_delivery_waiting: 0
+2022-07-06 19:03:01.544389 [hotstuff info] decision_waiting: 4
+2022-07-06 19:03:01.544399 [hotstuff info] -------- misc ---------
+2022-07-06 19:03:01.544409 [hotstuff info] fetched: 0
+2022-07-06 19:03:01.544419 [hotstuff info] delivered: 1
+2022-07-06 19:03:01.544431 [hotstuff info] cmd_cache: 0
+2022-07-06 19:03:01.544442 [hotstuff info] blk_cache: 2
+2022-07-06 19:03:01.544453 [hotstuff info] ------ misc (10s) -----
+2022-07-06 19:03:01.544464 [hotstuff info] fetched: 0
+2022-07-06 19:03:01.544474 [hotstuff info] delivered: 1
+2022-07-06 19:03:01.544484 [hotstuff info] decided: 0
+2022-07-06 19:03:01.544493 [hotstuff info] gened: 0
+2022-07-06 19:03:01.544498 [hotstuff info] avg. parent_size: 1.000
+2022-07-06 19:03:01.544506 [hotstuff info] delivery time: 0.000 avg, 0.000 min, 0.000 max
+2022-07-06 19:03:01.544514 [hotstuff info] --- replica msg. (10s) ---
+2022-07-06 19:03:01.544555 [hotstuff info] 542865a568: 6(713), 5(479), 0
+2022-07-06 19:03:01.544580 [hotstuff info] c261250345: 3(13), 3(13), 0
+2022-07-06 19:03:01.544635 [hotstuff info] 6540a0fea6: 3(13), 3(13), 0
+2022-07-06 19:03:01.544646 [hotstuff info] sent: 12
+2022-07-06 19:03:01.544652 [hotstuff info] recv: 11
+2022-07-06 19:03:01.544658 [hotstuff info] --- replica msg. total ---
+2022-07-06 19:03:01.544663 [hotstuff info] sent: 12
+2022-07-06 19:03:01.544669 [hotstuff info] recv: 11
+2022-07-06 19:03:01.544674 [hotstuff info] ====== end stats ======
+2022-07-06 19:03:01.544680 [hotstuff info] --- client msg. (10s) ---
+2022-07-06 19:03:01.544689 [hotstuff info] <NetAddr 127.0.0.1:35856>: 0(0), 4(32)
+2022-07-06 19:03:01.544699 [hotstuff info] --- end client msg. ---
+2022-07-06 19:03:02.544844 [hotstuff proto] Pacemaker: rotate to 1
+2022-07-06 19:03:02.544905 [hotstuff info] schedule to impeach the proposer
+2022-07-06 19:03:03.594466 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:03.594504 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:03.594514 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.594521 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.594527 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-1]
+2022-07-06 19:03:03.594551 [hotstuff info] [[propose_handler (here 3)]] [R-2] [L-1]
+2022-07-06 19:03:03.594565 [hotstuff proto] got <proposal rid=1 blk=6f4923c7a2>
+2022-07-06 19:03:03.594571 [hotstuff info] [[on_receive_proposal Before Update]] [R-2] [L-1]
+2022-07-06 19:03:03.594577 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:03:03.594583 [hotstuff info] [[update 1]]
+2022-07-06 19:03:03.594612 [hotstuff info] [[on_receive_proposal After Update]] [R-2] [L-1]
+2022-07-06 19:03:03.594636 [hotstuff proto] now state: <hotstuff hqc=6ef382c751 hqc.height=0 b_lock=6ef382c751 b_exec=6ef382c751 vheight=2 tails=1>
+2022-07-06 19:03:03.594678 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-1]
+2022-07-06 19:03:03.595881 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:03.595906 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:03.595914 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.595920 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.595925 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-1]
+2022-07-06 19:03:03.596276 [hotstuff info] [[propose_handler (here 3)]] [R-2] [L-1]
+2022-07-06 19:03:03.596299 [hotstuff proto] got <proposal rid=1 blk=f4189e6a7b>
+2022-07-06 19:03:03.596306 [hotstuff info] [[on_receive_proposal Before Update]] [R-2] [L-1]
+2022-07-06 19:03:03.596311 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:03:03.596316 [hotstuff info] [[update 1]]
+2022-07-06 19:03:03.596321 [hotstuff info] [[update 2]]
+2022-07-06 19:03:03.596331 [hotstuff info] [[update 3]]
+2022-07-06 19:03:03.596394 [hotstuff info] [[on_receive_proposal After Update]] [R-2] [L-1]
+2022-07-06 19:03:03.596414 [hotstuff proto] now state: <hotstuff hqc=6f4923c7a2 hqc.height=2 b_lock=6ef382c751 b_exec=6ef382c751 vheight=3 tails=1>
+2022-07-06 19:03:03.596424 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-1]
+2022-07-06 19:03:03.598077 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:03.598103 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:03.598111 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.598117 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.598122 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-1]
+2022-07-06 19:03:03.598422 [hotstuff info] [[propose_handler (here 3)]] [R-2] [L-1]
+2022-07-06 19:03:03.598437 [hotstuff proto] got <proposal rid=1 blk=76be04d306>
+2022-07-06 19:03:03.598443 [hotstuff info] [[on_receive_proposal Before Update]] [R-2] [L-1]
+2022-07-06 19:03:03.598448 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:03:03.598453 [hotstuff info] [[update 1]]
+2022-07-06 19:03:03.598458 [hotstuff info] [[update 2]]
+2022-07-06 19:03:03.598466 [hotstuff info] [[update 3]]
+2022-07-06 19:03:03.598471 [hotstuff info] [[update 4]]
+2022-07-06 19:03:03.598476 [hotstuff info] [[update 5]]
+2022-07-06 19:03:03.598481 [hotstuff info] [[on_receive_proposal After Update]] [R-2] [L-1]
+2022-07-06 19:03:03.598498 [hotstuff proto] now state: <hotstuff hqc=f4189e6a7b hqc.height=3 b_lock=6f4923c7a2 b_exec=6ef382c751 vheight=4 tails=1>
+2022-07-06 19:03:03.598507 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-1]
+2022-07-06 19:03:03.600751 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:03.600807 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:03.600817 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.600823 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.600828 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-1]
+2022-07-06 19:03:03.601136 [hotstuff info] [[propose_handler (here 3)]] [R-2] [L-1]
+2022-07-06 19:03:03.601157 [hotstuff proto] got <proposal rid=1 blk=319e39af49>
+2022-07-06 19:03:03.601163 [hotstuff info] [[on_receive_proposal Before Update]] [R-2] [L-1]
+2022-07-06 19:03:03.601168 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:03:03.601173 [hotstuff info] [[update 1]]
+2022-07-06 19:03:03.601178 [hotstuff info] [[update 2]]
+2022-07-06 19:03:03.601187 [hotstuff info] [[update 3]]
+2022-07-06 19:03:03.601192 [hotstuff info] [[update 4]]
+2022-07-06 19:03:03.601196 [hotstuff info] [[update 5]]
+2022-07-06 19:03:03.601201 [hotstuff info] [[update 6]]
+2022-07-06 19:03:03.601206 [hotstuff info] [[update 7]]
+2022-07-06 19:03:03.601237 [hotstuff proto] commit <block id=123e2e0b6e height=1 parent=6ef382c751 qc_ref=6ef382c751>
+2022-07-06 19:03:03.601252 [hotstuff info] replicated <fin decision=1 cmd_idx=0 cmd_height=1 cmd=af5570f5a1 blk=123e2e0b6e>
+2022-07-06 19:03:03.601271 [hotstuff info] replicated <fin decision=1 cmd_idx=1 cmd_height=1 cmd=01acecb507 blk=123e2e0b6e>
+2022-07-06 19:03:03.601284 [hotstuff info] replicated <fin decision=1 cmd_idx=2 cmd_height=1 cmd=2fcd151b82 blk=123e2e0b6e>
+2022-07-06 19:03:03.601296 [hotstuff info] replicated <fin decision=1 cmd_idx=3 cmd_height=1 cmd=9ae4c9d086 blk=123e2e0b6e>
+2022-07-06 19:03:03.601302 [hotstuff info] [[update Decided]] [R-2] [L-]
+2022-07-06 19:03:03.601308 [hotstuff proto] Pacemaker: stop rotation at 1
+2022-07-06 19:03:03.601405 [hotstuff proto] commit <block id=6f4923c7a2 height=2 parent=123e2e0b6e qc_ref=6ef382c751>
+2022-07-06 19:03:03.601750 [hotstuff info] [[update Decided]] [R-2] [L-]
+2022-07-06 19:03:03.601761 [hotstuff info] [[update Ends]] [R-2] [L-]
+2022-07-06 19:03:03.601766 [hotstuff info] [[on_receive_proposal After Update]] [R-2] [L-1]
+2022-07-06 19:03:03.601784 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=5 tails=1>
+2022-07-06 19:03:03.601794 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-1]
+2022-07-06 19:03:03.602431 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 1b03ab083d
+2022-07-06 19:03:03.602454 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 2be2196b9c
+2022-07-06 19:03:03.602464 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 20aef0af2b
+2022-07-06 19:03:03.602473 [hotstuff info] [[client_request_cmd_handler]] [R-2] [L-] Received Client Command = 4e65285e65
+2022-07-06 19:03:03.602541 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-1] Push commans to local buffer = 1b03ab083d
+2022-07-06 19:03:03.602555 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-1] Push commans to local buffer = 2be2196b9c
+2022-07-06 19:03:03.602564 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-1] Push commans to local buffer = 20aef0af2b
+2022-07-06 19:03:03.602572 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-1] Push commans to local buffer = 4e65285e65
+2022-07-06 19:03:03.602581 [hotstuff info] [[cmd_pending.reg_handler]] [R-2] [L-1] Created List of commands and sending to pacemaker (0) = 1b03ab083d
+2022-07-06 19:03:03.602589 [hotstuff info] [[on_local_order]] [R-2] [L-1] LocalOrder Object = @äò*ÌU
+2022-07-06 19:03:03.602595 [hotstuff info] [[do_send_local_order]] [R-2] [L-1] Send LocalOrder to Leader = @äò*ÌU
+2022-07-06 19:03:03.608250 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:03.608296 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:03.608310 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.608329 [hotstuff info] [[propose_handler]] [R-2] [L-1] key = 4e65285e65
+2022-07-06 19:03:03.608354 [hotstuff info] [[propose_handler]] [R-2] [L-1] key = 20aef0af2b
+2022-07-06 19:03:03.608373 [hotstuff info] [[propose_handler]] [R-2] [L-1] val = 4e65285e65
+2022-07-06 19:03:03.608389 [hotstuff info] [[propose_handler]] [R-2] [L-1] key = 2be2196b9c
+2022-07-06 19:03:03.608407 [hotstuff info] [[propose_handler]] [R-2] [L-1] val = 4e65285e65
+2022-07-06 19:03:03.608428 [hotstuff info] [[propose_handler]] [R-2] [L-1] val = 20aef0af2b
+2022-07-06 19:03:03.608446 [hotstuff info] [[propose_handler]] [R-2] [L-1] key = 1b03ab083d
+2022-07-06 19:03:03.608462 [hotstuff info] [[propose_handler]] [R-2] [L-1] val = 4e65285e65
+2022-07-06 19:03:03.608482 [hotstuff info] [[propose_handler]] [R-2] [L-1] val = 20aef0af2b
+2022-07-06 19:03:03.608530 [hotstuff info] [[propose_handler]] [R-2] [L-1] val = 2be2196b9c
+2022-07-06 19:03:03.608572 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:03.608584 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-1]
+2022-07-06 19:03:03.609275 [hotstuff info] [[propose_handler (here 3)]] [R-2] [L-1]
+2022-07-06 19:03:03.609305 [hotstuff proto] got <proposal rid=1 blk=042f14ee5a>
+2022-07-06 19:03:03.609324 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] key = 4e65285e65
+2022-07-06 19:03:03.609344 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] key = 20aef0af2b
+2022-07-06 19:03:03.609362 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] val = 4e65285e65
+2022-07-06 19:03:03.609378 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] key = 2be2196b9c
+2022-07-06 19:03:03.609394 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] val = 4e65285e65
+2022-07-06 19:03:03.609412 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] val = 20aef0af2b
+2022-07-06 19:03:03.609429 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] key = 1b03ab083d
+2022-07-06 19:03:03.609447 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] val = 4e65285e65
+2022-07-06 19:03:03.609473 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] val = 20aef0af2b
+2022-07-06 19:03:03.609492 [hotstuff info] [[on_receive_proposal Start]] [R-2] [L-1] val = 2be2196b9c
+2022-07-06 19:03:03.609502 [hotstuff info] [[on_receive_proposal Before Update]] [R-2] [L-1]
+2022-07-06 19:03:03.609513 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:03:03.609522 [hotstuff info] [[update 1]]
+2022-07-06 19:03:03.609532 [hotstuff info] [[update 2]]
+2022-07-06 19:03:03.609542 [hotstuff info] [[update 3]]
+2022-07-06 19:03:03.609551 [hotstuff info] [[update 4]]
+2022-07-06 19:03:03.609560 [hotstuff info] [[update 5]]
+2022-07-06 19:03:03.609569 [hotstuff info] [[on_receive_proposal After Update]] [R-2] [L-1]
+2022-07-06 19:03:03.609606 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=6 tails=1>
+2022-07-06 19:03:03.609624 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-1]
+2022-07-06 19:03:11.545279 [hotstuff info] ===== begin stats =====
+2022-07-06 19:03:11.545348 [hotstuff info] -------- queues -------
+2022-07-06 19:03:11.545360 [hotstuff info] blk_fetch_waiting: 0
+2022-07-06 19:03:11.545370 [hotstuff info] blk_delivery_waiting: 0
+2022-07-06 19:03:11.545378 [hotstuff info] decision_waiting: 4
+2022-07-06 19:03:11.545387 [hotstuff info] -------- misc ---------
+2022-07-06 19:03:11.545395 [hotstuff info] fetched: 0
+2022-07-06 19:03:11.545404 [hotstuff info] delivered: 6
+2022-07-06 19:03:11.545412 [hotstuff info] cmd_cache: 0
+2022-07-06 19:03:11.545421 [hotstuff info] blk_cache: 7
+2022-07-06 19:03:11.545429 [hotstuff info] ------ misc (10s) -----
+2022-07-06 19:03:11.545438 [hotstuff info] fetched: 0
+2022-07-06 19:03:11.545446 [hotstuff info] delivered: 5
+2022-07-06 19:03:11.545454 [hotstuff info] decided: 4
+2022-07-06 19:03:11.545463 [hotstuff info] gened: 0
+2022-07-06 19:03:11.545471 [hotstuff info] avg. parent_size: 1.000
+2022-07-06 19:03:11.545483 [hotstuff info] delivery time: 0.000 avg, 0.000 min, 0.001 max
+2022-07-06 19:03:11.545495 [hotstuff info] --- replica msg. (10s) ---
+2022-07-06 19:03:11.545555 [hotstuff info] 542865a568: 1(432), 1(36), 0
+2022-07-06 19:03:11.545595 [hotstuff info] c261250345: 7(1412), 6(1610), 0
+2022-07-06 19:03:11.545631 [hotstuff info] 6540a0fea6: 0(0), 0(0), 0
+2022-07-06 19:03:11.545643 [hotstuff info] sent: 8
+2022-07-06 19:03:11.545651 [hotstuff info] recv: 7
+2022-07-06 19:03:11.545660 [hotstuff info] --- replica msg. total ---
+2022-07-06 19:03:11.545668 [hotstuff info] sent: 20
+2022-07-06 19:03:11.545676 [hotstuff info] recv: 18
+2022-07-06 19:03:11.545685 [hotstuff info] ====== end stats ======
+2022-07-06 19:03:11.545693 [hotstuff info] --- client msg. (10s) ---
+2022-07-06 19:03:11.545706 [hotstuff info] <NetAddr 127.0.0.1:35856>: 4(300), 4(32)
+2022-07-06 19:03:11.545715 [hotstuff info] --- end client msg. ---
+2022-07-06 19:03:14.605867 [hotstuff proto] Pacemaker: rotate to 2
+2022-07-06 19:03:14.605904 [hotstuff info] schedule to impeach the proposer
+2022-07-06 19:03:15.608380 [hotstuff info] [[on_propose]] [R-2] [L-] block hqc = 76be04d306, Decision = 0
+2022-07-06 19:03:15.608457 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:03:15.608482 [hotstuff info] [[update 1]]
+2022-07-06 19:03:15.608497 [hotstuff info] [[update 2]]
+2022-07-06 19:03:15.608522 [hotstuff info] [[update 3]]
+2022-07-06 19:03:15.608535 [hotstuff info] [[update 4]]
+2022-07-06 19:03:15.608548 [hotstuff info] [[update 5]]
+2022-07-06 19:03:15.608725 [hotstuff proto] propose <block id=c70952f394 height=7 parent=042f14ee5a qc_ref=76be04d306>
+2022-07-06 19:03:15.608798 [hotstuff proto] got <proposal rid=2 blk=c70952f394>
+2022-07-06 19:03:15.608865 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=7 tails=1>
+2022-07-06 19:03:15.608945 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-2]
+2022-07-06 19:03:15.609105 [hotstuff proto] got <vote rid=2 blk=c70952f394>
+2022-07-06 19:03:15.609189 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=7 tails=1>
+2022-07-06 19:03:15.609237 [hotstuff info] [[do_broadcast_proposal]] [R-2] [L-2] replica = 542865a568
+2022-07-06 19:03:15.609252 [hotstuff info] [[do_broadcast_proposal]] [R-2] [L-2] replica = c261250345
+2022-07-06 19:03:15.609263 [hotstuff info] [[do_broadcast_proposal]] [R-2] [L-2] replica = 6540a0fea6
+2022-07-06 19:03:15.609269 [hotstuff info] [[Proposal Serialize Start]]
+2022-07-06 19:03:15.609281 [hotstuff info] [[Proposal Serialize Ends]]
+2022-07-06 19:03:15.611380 [hotstuff proto] got <vote rid=3 blk=c70952f394>
+2022-07-06 19:03:15.611426 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=7 tails=1>
+2022-07-06 19:03:16.612521 [hotstuff proto] Pacemaker: rotate to 3
+2022-07-06 19:03:18.616659 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:18.616709 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:18.616724 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-3]
+2022-07-06 19:03:18.616734 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-3]
+2022-07-06 19:03:18.616743 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-3]
+2022-07-06 19:03:18.617361 [hotstuff info] [[propose_handler (here 3)]] [R-2] [L-3]
+2022-07-06 19:03:18.617397 [hotstuff proto] got <proposal rid=3 blk=ec33b4a18b>
+2022-07-06 19:03:18.617409 [hotstuff info] [[on_receive_proposal Before Update]] [R-2] [L-3]
+2022-07-06 19:03:18.617418 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:03:18.617479 [hotstuff info] [[update 1]]
+2022-07-06 19:03:18.617490 [hotstuff info] [[update 2]]
+2022-07-06 19:03:18.617500 [hotstuff info] [[update 3]]
+2022-07-06 19:03:18.617514 [hotstuff info] [[update 4]]
+2022-07-06 19:03:18.617527 [hotstuff info] [[update 5]]
+2022-07-06 19:03:18.617541 [hotstuff info] [[on_receive_proposal After Update]] [R-2] [L-3]
+2022-07-06 19:03:18.617598 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=8 tails=1>
+2022-07-06 19:03:18.617634 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-3]
+2022-07-06 19:03:19.617182 [hotstuff proto] Pacemaker: rotate to 0
+2022-07-06 19:03:20.615271 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:20.615306 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:20.615318 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-0]
+2022-07-06 19:03:20.615329 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-0]
+2022-07-06 19:03:20.615339 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-0]
+2022-07-06 19:03:21.548454 [hotstuff info] ===== begin stats =====
+2022-07-06 19:03:21.548523 [hotstuff info] -------- queues -------
+2022-07-06 19:03:21.548536 [hotstuff info] blk_fetch_waiting: 1
+2022-07-06 19:03:21.548545 [hotstuff info] blk_delivery_waiting: 2
+2022-07-06 19:03:21.548554 [hotstuff info] decision_waiting: 4
+2022-07-06 19:03:21.548562 [hotstuff info] -------- misc ---------
+2022-07-06 19:03:21.548571 [hotstuff info] fetched: 1
+2022-07-06 19:03:21.548579 [hotstuff info] delivered: 7
+2022-07-06 19:03:21.548588 [hotstuff info] cmd_cache: 0
+2022-07-06 19:03:21.548596 [hotstuff info] blk_cache: 10
+2022-07-06 19:03:21.548605 [hotstuff info] ------ misc (10s) -----
+2022-07-06 19:03:21.548613 [hotstuff info] fetched: 1
+2022-07-06 19:03:21.548622 [hotstuff info] delivered: 1
+2022-07-06 19:03:21.548630 [hotstuff info] decided: 0
+2022-07-06 19:03:21.548638 [hotstuff info] gened: 0
+2022-07-06 19:03:21.548646 [hotstuff info] avg. parent_size: 1.000
+2022-07-06 19:03:21.548658 [hotstuff info] delivery time: 0.001 avg, 0.001 min, 0.001 max
+2022-07-06 19:03:21.548670 [hotstuff info] --- replica msg. (10s) ---
+2022-07-06 19:03:21.548729 [hotstuff info] 542865a568: 2(322), 2(526), 1
+2022-07-06 19:03:21.548770 [hotstuff info] c261250345: 2(910), 1(36), 0
+2022-07-06 19:03:21.548806 [hotstuff info] 6540a0fea6: 2(416), 2(416), 0
+2022-07-06 19:03:21.548820 [hotstuff info] sent: 6
+2022-07-06 19:03:21.548829 [hotstuff info] recv: 5
+2022-07-06 19:03:21.548850 [hotstuff info] --- replica msg. total ---
+2022-07-06 19:03:21.548859 [hotstuff info] sent: 26
+2022-07-06 19:03:21.548867 [hotstuff info] recv: 23
+2022-07-06 19:03:21.548876 [hotstuff info] ====== end stats ======
+2022-07-06 19:03:21.548884 [hotstuff info] --- client msg. (10s) ---
+2022-07-06 19:03:21.548897 [hotstuff info] <NetAddr 127.0.0.1:35856>: 0(0), 0(0)
+2022-07-06 19:03:21.548906 [hotstuff info] --- end client msg. ---
+2022-07-06 19:03:24.622957 [hotstuff proto] Pacemaker: rotate to 1
+2022-07-06 19:03:26.776444 [net info] 065b010aed: ping from <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>
+2022-07-06 19:03:31.562173 [hotstuff info] ===== begin stats =====
+2022-07-06 19:03:31.562263 [hotstuff info] -------- queues -------
+2022-07-06 19:03:31.562274 [hotstuff info] blk_fetch_waiting: 1
+2022-07-06 19:03:31.562281 [hotstuff info] blk_delivery_waiting: 2
+2022-07-06 19:03:31.562286 [hotstuff info] decision_waiting: 4
+2022-07-06 19:03:31.562292 [hotstuff info] -------- misc ---------
+2022-07-06 19:03:31.562298 [hotstuff info] fetched: 1
+2022-07-06 19:03:31.562304 [hotstuff info] delivered: 7
+2022-07-06 19:03:31.562310 [hotstuff info] cmd_cache: 0
+2022-07-06 19:03:31.562316 [hotstuff info] blk_cache: 10
+2022-07-06 19:03:31.562322 [hotstuff info] ------ misc (10s) -----
+2022-07-06 19:03:31.562328 [hotstuff info] fetched: 0
+2022-07-06 19:03:31.562333 [hotstuff info] delivered: 0
+2022-07-06 19:03:31.562339 [hotstuff info] decided: 0
+2022-07-06 19:03:31.562344 [hotstuff info] gened: 0
+2022-07-06 19:03:31.562349 [hotstuff info] avg. parent_size: 0.000
+2022-07-06 19:03:31.562357 [hotstuff info] delivery time: 0.000 avg, 0.000 min, 0.000 max
+2022-07-06 19:03:31.562365 [hotstuff info] --- replica msg. (10s) ---
+2022-07-06 19:03:31.562410 [hotstuff info] 542865a568: 3(434), 3(38), 0
+2022-07-06 19:03:31.562436 [hotstuff info] c261250345: 2(625), 2(37), 0
+2022-07-06 19:03:31.562517 [hotstuff info] 6540a0fea6: 1(1), 1(1), 0
+2022-07-06 19:03:31.562528 [hotstuff info] sent: 6
+2022-07-06 19:03:31.562534 [hotstuff info] recv: 6
+2022-07-06 19:03:31.562540 [hotstuff info] --- replica msg. total ---
+2022-07-06 19:03:31.562546 [hotstuff info] sent: 32
+2022-07-06 19:03:31.562551 [hotstuff info] recv: 29
+2022-07-06 19:03:31.562557 [hotstuff info] ====== end stats ======
+2022-07-06 19:03:31.562563 [hotstuff info] --- client msg. (10s) ---
+2022-07-06 19:03:31.562572 [hotstuff info] <NetAddr 127.0.0.1:35856>: 0(0), 0(0)
+2022-07-06 19:03:31.562579 [hotstuff info] --- end client msg. ---
+2022-07-06 19:03:32.440711 [hotstuff warn] block fetching 6db04dc51f timeout
+2022-07-06 19:03:32.625469 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:32.625501 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:32.625510 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:32.625516 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:32.625521 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-1]
+2022-07-06 19:03:33.280015 [net info] 065b010aed: ping from <Conn fd=88 addr=<NetAddr 127.0.0.1:42046> mode=passive>
+2022-07-06 19:03:33.626167 [hotstuff proto] Pacemaker: rotate to 2
+2022-07-06 19:03:35.421934 [net info] 065b010aed: ping from <Conn fd=85 addr=<NetAddr 127.0.0.1:42050> mode=passive>
+2022-07-06 19:03:41.563829 [hotstuff info] ===== begin stats =====
+2022-07-06 19:03:41.563899 [hotstuff info] -------- queues -------
+2022-07-06 19:03:41.563909 [hotstuff info] blk_fetch_waiting: 2
+2022-07-06 19:03:41.563915 [hotstuff info] blk_delivery_waiting: 4
+2022-07-06 19:03:41.563921 [hotstuff info] decision_waiting: 4
+2022-07-06 19:03:41.563926 [hotstuff info] -------- misc ---------
+2022-07-06 19:03:41.563932 [hotstuff info] fetched: 3
+2022-07-06 19:03:41.563937 [hotstuff info] delivered: 7
+2022-07-06 19:03:41.563943 [hotstuff info] cmd_cache: 0
+2022-07-06 19:03:41.563949 [hotstuff info] blk_cache: 11
+2022-07-06 19:03:41.563954 [hotstuff info] ------ misc (10s) -----
+2022-07-06 19:03:41.563960 [hotstuff info] fetched: 2
+2022-07-06 19:03:41.563965 [hotstuff info] delivered: 0
+2022-07-06 19:03:41.563980 [hotstuff info] decided: 0
+2022-07-06 19:03:41.563986 [hotstuff info] gened: 0
+2022-07-06 19:03:41.563991 [hotstuff info] avg. parent_size: 0.000
+2022-07-06 19:03:41.564000 [hotstuff info] delivery time: 0.000 avg, 0.000 min, 0.000 max
+2022-07-06 19:03:41.564007 [hotstuff info] --- replica msg. (10s) ---
+2022-07-06 19:03:41.564049 [hotstuff info] 542865a568: 2(468), 2(468), 1
+2022-07-06 19:03:41.564081 [hotstuff info] c261250345: 3(661), 4(947), 1
+2022-07-06 19:03:41.564106 [hotstuff info] 6540a0fea6: 1(1), 1(1), 0
+2022-07-06 19:03:41.564117 [hotstuff info] sent: 6
+2022-07-06 19:03:41.564123 [hotstuff info] recv: 7
+2022-07-06 19:03:41.564128 [hotstuff info] --- replica msg. total ---
+2022-07-06 19:03:41.564134 [hotstuff info] sent: 38
+2022-07-06 19:03:41.564139 [hotstuff info] recv: 36
+2022-07-06 19:03:41.564144 [hotstuff info] ====== end stats ======
+2022-07-06 19:03:41.564150 [hotstuff info] --- client msg. (10s) ---
+2022-07-06 19:03:41.564159 [hotstuff info] <NetAddr 127.0.0.1:35856>: 0(0), 0(0)
+2022-07-06 19:03:41.564168 [hotstuff info] --- end client msg. ---
+2022-07-06 19:03:45.620816 [hotstuff warn] block fetching 6db04dc51f timeout
+2022-07-06 19:03:45.659583 [hotstuff warn] block fetching 9e1169aced timeout
+2022-07-06 19:03:49.669799 [hotstuff info] [[on_propose]] [R-2] [L-] block hqc = 76be04d306, Decision = 0
+2022-07-06 19:03:49.669871 [hotstuff info] [[update Start]] [R-2] [L-]
+2022-07-06 19:03:49.669885 [hotstuff info] [[update 1]]
+2022-07-06 19:03:49.669894 [hotstuff info] [[update 2]]
+2022-07-06 19:03:49.669903 [hotstuff info] [[update 3]]
+2022-07-06 19:03:49.669911 [hotstuff info] [[update 4]]
+2022-07-06 19:03:49.669919 [hotstuff info] [[update 5]]
+2022-07-06 19:03:49.669952 [hotstuff proto] propose <block id=66a4c5fd01 height=9 parent=ec33b4a18b qc_ref=76be04d306>
+2022-07-06 19:03:49.669969 [hotstuff proto] got <proposal rid=2 blk=66a4c5fd01>
+2022-07-06 19:03:49.669998 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=9 tails=1>
+2022-07-06 19:03:49.670092 [hotstuff info] [[on_receive_proposal Start Vote]] [R-2] [L-2]
+2022-07-06 19:03:49.670247 [hotstuff proto] got <vote rid=2 blk=66a4c5fd01>
+2022-07-06 19:03:49.670291 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=9 tails=1>
+2022-07-06 19:03:49.670333 [hotstuff info] [[do_broadcast_proposal]] [R-2] [L-2] replica = 542865a568
+2022-07-06 19:03:49.670350 [hotstuff info] [[do_broadcast_proposal]] [R-2] [L-2] replica = c261250345
+2022-07-06 19:03:49.670371 [hotstuff info] [[do_broadcast_proposal]] [R-2] [L-2] replica = 6540a0fea6
+2022-07-06 19:03:49.670380 [hotstuff info] [[Proposal Serialize Start]]
+2022-07-06 19:03:49.670391 [hotstuff info] [[Proposal Serialize Ends]]
+2022-07-06 19:03:49.672321 [hotstuff proto] got <vote rid=3 blk=66a4c5fd01>
+2022-07-06 19:03:49.672356 [hotstuff proto] now state: <hotstuff hqc=76be04d306 hqc.height=4 b_lock=f4189e6a7b b_exec=6f4923c7a2 vheight=9 tails=1>
+2022-07-06 19:03:50.677993 [hotstuff proto] Pacemaker: rotate to 3
+2022-07-06 19:03:51.565149 [hotstuff info] ===== begin stats =====
+2022-07-06 19:03:51.565212 [hotstuff info] -------- queues -------
+2022-07-06 19:03:51.565221 [hotstuff info] blk_fetch_waiting: 2
+2022-07-06 19:03:51.565227 [hotstuff info] blk_delivery_waiting: 4
+2022-07-06 19:03:51.565232 [hotstuff info] decision_waiting: 4
+2022-07-06 19:03:51.565238 [hotstuff info] -------- misc ---------
+2022-07-06 19:03:51.565243 [hotstuff info] fetched: 5
+2022-07-06 19:03:51.565249 [hotstuff info] delivered: 7
+2022-07-06 19:03:51.565254 [hotstuff info] cmd_cache: 0
+2022-07-06 19:03:51.565260 [hotstuff info] blk_cache: 12
+2022-07-06 19:03:51.565265 [hotstuff info] ------ misc (10s) -----
+2022-07-06 19:03:51.565271 [hotstuff info] fetched: 2
+2022-07-06 19:03:51.565276 [hotstuff info] delivered: 0
+2022-07-06 19:03:51.565282 [hotstuff info] decided: 0
+2022-07-06 19:03:51.565287 [hotstuff info] gened: 0
+2022-07-06 19:03:51.565292 [hotstuff info] avg. parent_size: 0.000
+2022-07-06 19:03:51.565315 [hotstuff info] delivery time: 0.000 avg, 0.000 min, 0.000 max
+2022-07-06 19:03:51.565324 [hotstuff info] --- replica msg. (10s) ---
+2022-07-06 19:03:51.565365 [hotstuff info] 542865a568: 2(322), 1(432), 1
+2022-07-06 19:03:51.565391 [hotstuff info] c261250345: 2(322), 1(624), 1
+2022-07-06 19:03:51.565420 [hotstuff info] 6540a0fea6: 1(286), 1(130), 0
+2022-07-06 19:03:51.565429 [hotstuff info] sent: 5
+2022-07-06 19:03:51.565435 [hotstuff info] recv: 3
+2022-07-06 19:03:51.565441 [hotstuff info] --- replica msg. total ---
+2022-07-06 19:03:51.565446 [hotstuff info] sent: 43
+2022-07-06 19:03:51.565452 [hotstuff info] recv: 39
+2022-07-06 19:03:51.565457 [hotstuff info] ====== end stats ======
+2022-07-06 19:03:51.565463 [hotstuff info] --- client msg. (10s) ---
+2022-07-06 19:03:51.565471 [hotstuff info] <NetAddr 127.0.0.1:35856>: 0(0), 0(0)
+2022-07-06 19:03:51.565481 [hotstuff info] --- end client msg. ---
+2022-07-06 19:03:51.634350 [hotstuff info] [[Proposal UnSerialize Start]]
+2022-07-06 19:03:51.634408 [hotstuff info] [[Proposal UnSerialize Ends]]
+2022-07-06 19:03:51.634426 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:51.634437 [hotstuff info] [[propose_handler (here 1)]] [R-2] [L-1]
+2022-07-06 19:03:51.634448 [hotstuff info] [[propose_handler (here 2)]] [R-2] [L-1]
+2022-07-06 19:03:55.703657 [hotstuff warn] block fetching 6db04dc51f timeout
+2022-07-06 19:03:56.874703 [hotstuff warn] block fetching 9e1169aced timeout
+2022-07-06 19:04:01.568329 [hotstuff info] ===== begin stats =====
+2022-07-06 19:04:01.568413 [hotstuff info] -------- queues -------
+2022-07-06 19:04:01.568427 [hotstuff info] blk_fetch_waiting: 2
+2022-07-06 19:04:01.568435 [hotstuff info] blk_delivery_waiting: 5
+2022-07-06 19:04:01.568440 [hotstuff info] decision_waiting: 4
+2022-07-06 19:04:01.568445 [hotstuff info] -------- misc ---------
+2022-07-06 19:04:01.568450 [hotstuff info] fetched: 7
+2022-07-06 19:04:01.568455 [hotstuff info] delivered: 7
+2022-07-06 19:04:01.568460 [hotstuff info] cmd_cache: 0
+2022-07-06 19:04:01.568465 [hotstuff info] blk_cache: 13
+2022-07-06 19:04:01.568470 [hotstuff info] ------ misc (10s) -----
+2022-07-06 19:04:01.568475 [hotstuff info] fetched: 2
+2022-07-06 19:04:01.568479 [hotstuff info] delivered: 0
+2022-07-06 19:04:01.568484 [hotstuff info] decided: 0
+2022-07-06 19:04:01.568489 [hotstuff info] gened: 0
+2022-07-06 19:04:01.568494 [hotstuff info] avg. parent_size: 0.000
+2022-07-06 19:04:01.568502 [hotstuff info] delivery time: 0.000 avg, 0.000 min, 0.000 max
+2022-07-06 19:04:01.568508 [hotstuff info] --- replica msg. (10s) ---
+2022-07-06 19:04:01.568550 [hotstuff info] 542865a568: 2(468), 2(468), 1
+2022-07-06 19:04:01.568575 [hotstuff info] c261250345: 2(660), 3(946), 1
+2022-07-06 19:04:01.568597 [hotstuff info] 6540a0fea6: 0(0), 0(0), 0
+2022-07-06 19:04:01.568603 [hotstuff info] sent: 4
+2022-07-06 19:04:01.568608 [hotstuff info] recv: 5
+2022-07-06 19:04:01.568613 [hotstuff info] --- replica msg. total ---
+2022-07-06 19:04:01.568617 [hotstuff info] sent: 47
+2022-07-06 19:04:01.568622 [hotstuff info] recv: 44
+2022-07-06 19:04:01.568627 [hotstuff info] ====== end stats ======
+2022-07-06 19:04:01.568632 [hotstuff info] --- client msg. (10s) ---
+2022-07-06 19:04:01.568640 [hotstuff info] <NetAddr 127.0.0.1:35856>: 0(0), 0(0)
+2022-07-06 19:04:01.568645 [hotstuff info] --- end client msg. ---
+2022-07-06 19:04:06.391827 [hotstuff warn] block fetching 6db04dc51f timeout
+2022-07-06 19:04:06.923992 [net info] 065b010aed: ping from <Conn fd=88 addr=<NetAddr 127.0.0.1:42046> mode=passive>
+2022-07-06 19:04:07.480337 [net info] 065b010aed: ping from <Conn fd=85 addr=<NetAddr 127.0.0.1:42050> mode=passive>
+2022-07-06 19:04:07.540336 [net info] 065b010aed: ping from <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>
+2022-07-06 19:04:10.895235 [hotstuff warn] block fetching 9e1169aced timeout
+2022-07-06 19:04:11.569777 [hotstuff info] ===== begin stats =====
+2022-07-06 19:04:11.569824 [hotstuff info] -------- queues -------
+2022-07-06 19:04:11.569836 [hotstuff info] blk_fetch_waiting: 2
+2022-07-06 19:04:11.569864 [hotstuff info] blk_delivery_waiting: 5
+2022-07-06 19:04:11.569874 [hotstuff info] decision_waiting: 4
+2022-07-06 19:04:11.569883 [hotstuff info] -------- misc ---------
+2022-07-06 19:04:11.569892 [hotstuff info] fetched: 9
+2022-07-06 19:04:11.569901 [hotstuff info] delivered: 7
+2022-07-06 19:04:11.569910 [hotstuff info] cmd_cache: 0
+2022-07-06 19:04:11.569919 [hotstuff info] blk_cache: 13
+2022-07-06 19:04:11.569928 [hotstuff info] ------ misc (10s) -----
+2022-07-06 19:04:11.569936 [hotstuff info] fetched: 2
+2022-07-06 19:04:11.569945 [hotstuff info] delivered: 0
+2022-07-06 19:04:11.569953 [hotstuff info] decided: 0
+2022-07-06 19:04:11.569962 [hotstuff info] gened: 0
+2022-07-06 19:04:11.569970 [hotstuff info] avg. parent_size: 0.000
+2022-07-06 19:04:11.569981 [hotstuff info] delivery time: 0.000 avg, 0.000 min, 0.000 max
+2022-07-06 19:04:11.569992 [hotstuff info] --- replica msg. (10s) ---
+2022-07-06 19:04:11.570050 [hotstuff info] 542865a568: 4(470), 4(470), 1
+2022-07-06 19:04:11.570105 [hotstuff info] c261250345: 4(662), 4(662), 1
+2022-07-06 19:04:11.570143 [hotstuff info] 6540a0fea6: 1(1), 1(1), 0
+2022-07-06 19:04:11.570155 [hotstuff info] sent: 9
+2022-07-06 19:04:11.570164 [hotstuff info] recv: 9
+2022-07-06 19:04:11.570172 [hotstuff info] --- replica msg. total ---
+2022-07-06 19:04:11.570181 [hotstuff info] sent: 56
+2022-07-06 19:04:11.570189 [hotstuff info] recv: 53
+2022-07-06 19:04:11.570197 [hotstuff info] ====== end stats ======
+2022-07-06 19:04:11.570206 [hotstuff info] --- client msg. (10s) ---
+2022-07-06 19:04:11.570218 [hotstuff info] <NetAddr 127.0.0.1:35856>: 0(0), 0(0)
+2022-07-06 19:04:11.570228 [hotstuff info] --- end client msg. ---
+2022-07-06 19:04:14.863466 [net info] elapsed: 83.322 (wall) 0.138 (cpu)
+2022-07-06 19:04:14.864438 [net info] stopping all threads...
+2022-07-06 19:04:14.865451 [net info] 065b010aed: lost connection <Conn fd=88 addr=<NetAddr 127.0.0.1:42046> mode=passive>
+2022-07-06 19:04:14.865475 [net info] ended 065b010aed <-/-> 6540a0fea6 (via <Conn fd=88 addr=<NetAddr 127.0.0.1:42046> mode=passive>)
+2022-07-06 19:04:14.865675 [net info] stopping all threads...
+2022-07-06 19:04:14.865828 [net info] 065b010aed: lost connection <Conn fd=85 addr=<NetAddr 127.0.0.1:42050> mode=passive>
+2022-07-06 19:04:14.865843 [net info] ended 065b010aed <-/-> c261250345 (via <Conn fd=85 addr=<NetAddr 127.0.0.1:42050> mode=passive>)
+2022-07-06 19:04:14.865885 [net info] 065b010aed: lost connection <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>
+2022-07-06 19:04:14.865896 [net info] ended 065b010aed <-/-> 542865a568 (via <Conn fd=91 addr=<NetAddr 127.0.0.1:10000> mode=active>)

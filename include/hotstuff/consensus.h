@@ -109,13 +109,16 @@ class HotStuffCore {
                     const std::vector<block_t> &parents,
                     bytearray_t &&extra = bytearray_t());
 
-    // Themis
+    
     /** Call to submit local order to the current leader **/
-    void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds);
+    void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds);       // Themis
     /** Called when local order is received on Leader from a Replica  **/
-    void on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);
+    void on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);   // Themis
+    /** FairFinalize() **/
+    std::vector<uint256_t> fair_finalize(block_t const &blk, std::vector<std::pair<uint256_t, uint256_t>> const &e_update);       // Themis
     /** FairPropose() **/
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> fair_propose();                 // Themis
+    /** Themis thereshold Initialization **/
     double get_solid_tx_threshold();    // Themis
     double get_non_blank_tx_threshold();// Themis
     double get_tx_edge_threshold();     // Themis
