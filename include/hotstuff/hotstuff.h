@@ -217,6 +217,7 @@ class HotStuffBase: public HotStuffCore {
     void do_send_local_order(ReplicaID, const LocalOrder &) override;
     void do_decide(Finality &&) override;
     void do_consensus(const block_t &blk) override;
+    void print_block(std::string calling_method, const hotstuff::Proposal &prop);
 
     protected:
 

@@ -216,29 +216,41 @@ void HotStuffBase::propose_handler(MsgPropose &&msg, const Net::conn_t &conn) {
     auto &prop = msg.proposal;
     block_t blk = prop.blk;
 
-    HOTSTUFF_LOG_INFO("[[propose_handler (here 1)]] [R-%d] [L-%d]", get_id(), prop.proposer);
-
-    for ( auto const &g: blk->get_graph()) {
-        HOTSTUFF_LOG_INFO("[[propose_handler]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
-        for (auto const &tx: g.second){
-            HOTSTUFF_LOG_INFO("[[propose_handler]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
-        }
-    }
+    print_block("propose_handler (here 1)", prop);
 
     if (!blk) return;
-    HOTSTUFF_LOG_INFO("[[propose_handler (here 1)]] [R-%d] [L-%d]", get_id(), prop.proposer);
+    HOTSTUFF_LOG_INFO("[[propose_handler (here 2)]] [R-%d] [L-%d]", get_id(), prop.proposer);
     if (peer != get_config().get_peer_id(prop.proposer))
     {
         LOG_WARN("invalid proposal from %d", prop.proposer);
         return;
     }
-    HOTSTUFF_LOG_INFO("[[propose_handler (here 2)]] [R-%d] [L-%d]", get_id(), prop.proposer);
+    HOTSTUFF_LOG_INFO("[[propose_handler (here 3)]] [R-%d] [L-%d]", get_id(), prop.proposer);
     promise::all(std::vector<promise_t>{
         async_deliver_blk(blk->get_hash(), peer)
     }).then([this, prop = std::move(prop)]() {
-        HOTSTUFF_LOG_INFO("[[propose_handler (here 3)]] [R-%d] [L-%d]", get_id(), prop.proposer);
+        HOTSTUFF_LOG_INFO("[[propose_handler (here 4)]] [R-%d] [L-%d]", get_id(), prop.proposer);
         on_receive_proposal(prop);
     });
+}
+
+void HotStuffBase::print_block(std::string calling_method, const hotstuff::Proposal &prop){
+    for ( auto const &g: prop.blk->get_graph()) {
+        HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] key = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(g.first).c_str());
+        for (auto const &tx: g.second){
+            HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] val = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(tx).c_str());
+        }
+    }
+
+    DataStream s1;
+    prop.blk->serialize(s1);
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] block (serialized) = %s", calling_method.c_str(), get_id(), prop.proposer, s1.get_hex().c_str());
+    DataStream s2;
+    s2 << *prop.blk;
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] block (salticidae raw) = %s", calling_method.c_str(), get_id(), prop.proposer, s2.get_hex().c_str());
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] block (salticidae raw hash) = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(s2.get_hash()).c_str());
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] block (salticidae hash) = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(salticidae::get_hash(*prop.blk)).c_str());
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] broadcasted block = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(prop.blk->get_hash()).c_str());
 }
 
 void HotStuffBase::vote_handler(MsgVote &&msg, const Net::conn_t &conn) {
@@ -484,11 +496,14 @@ void HotStuffBase::do_consensus(const block_t &blk) {
 }
 
 void HotStuffBase::do_decide(Finality &&fin) {
+    HOTSTUFF_LOG_INFO("[[do_decide Start]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
     part_decided++;
     state_machine_execute(fin);
+    HOTSTUFF_LOG_INFO("[[do_decide After State Machine Execute]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
     auto it = decision_waiting.find(fin.cmd_hash);
     if (it != decision_waiting.end())
     {
+        HOTSTUFF_LOG_INFO("[[do_decide Execute]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
         it->second(std::move(fin));
         decision_waiting.erase(it);
     }

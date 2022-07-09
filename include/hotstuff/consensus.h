@@ -109,7 +109,7 @@ class HotStuffCore {
                     const std::vector<block_t> &parents,
                     bytearray_t &&extra = bytearray_t());
 
-    
+    void print_block(std::string calling_method,const hotstuff::Proposal &prop);                       // Themis
     /** Call to submit local order to the current leader **/
     void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds);       // Themis
     /** Called when local order is received on Leader from a Replica  **/

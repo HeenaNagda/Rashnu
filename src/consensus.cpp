@@ -17,6 +17,7 @@
 
 #include <cassert>
 #include <stack>
+#include <string>
 
 #include "hotstuff/util.h"
 #include "hotstuff/consensus.h"
@@ -95,7 +96,7 @@ void HotStuffCore::update_hqc(const block_t &_hqc, const quorum_cert_bt &qc) {
 // TODO: Themis
 void HotStuffCore::update(const block_t &nblk) {
     /* nblk = b*, blk2 = b'', blk1 = b', blk = b */
-    HOTSTUFF_LOG_INFO("[[update Start]] [R-%d] [L-]", get_id());
+    HOTSTUFF_LOG_INFO("[[update Start]] [R-%d] [L-] new block = %.10s", get_id(),get_hex(nblk->get_hash()).c_str());
 #ifndef HOTSTUFF_TWO_STEP
     /* three-step HotStuff */
     const block_t &blk2 = nblk->qc_ref;
@@ -149,14 +150,19 @@ void HotStuffCore::update(const block_t &nblk) {
         throw std::runtime_error("safety breached :( " +
                                 std::string(*blk) + " " +
                                 std::string(*b_exec));
+
+    HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Commit queue Size = %d", get_id(), commit_queue.size());
     for (auto it = commit_queue.rbegin(); it != commit_queue.rend(); it++)
     {
         const block_t &blk = *it;
 
         // Themis
+        HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Graph Size = %d, block = %.10s", get_id(), blk->get_graph().size(), get_hex(blk->get_hash()).c_str());
         auto const &order = fair_finalize(blk, nblk->get_e_update());
+        HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Final Order Size = %d", get_id(), order.size());
         if(order.empty() && !blk->get_graph().empty()) {
             /* this is not a tournament graph: stop looking at further blocks */
+            HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Not a tournament Graph", get_id());
             break;
         }
 
@@ -168,7 +174,7 @@ void HotStuffCore::update(const block_t &nblk) {
         for (size_t i=0; i<n; i++) {
             do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
         }
-        b_exec = *it;
+        // b_exec = *it;
 
         HOTSTUFF_LOG_INFO("[[update Decided]] [R-%d] [L-]", get_id());
 
@@ -179,7 +185,7 @@ void HotStuffCore::update(const block_t &nblk) {
         //     do_decide(Finality(id, 1, i, blk->height,
         //                         blk->cmds[i], blk->get_hash()));
     }
-    // b_exec = blk;                        // Themis
+    b_exec = blk;                        
     HOTSTUFF_LOG_INFO("[[update Ends]] [R-%d] [L-]", get_id());
 }
 
@@ -253,23 +259,41 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
     if (bnew->height <= vheight)
         throw std::runtime_error("new block should be higher than vheight");
     /* self-receive the proposal (no need to send it through the network) */
-    for ( auto const &g: bnew->get_graph()) {
-        HOTSTUFF_LOG_INFO("[[on_propose]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
-        for (auto const &tx: g.second){
-            HOTSTUFF_LOG_INFO("[[on_propose]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
-        }
-    }
     on_receive_proposal(prop);
     on_propose_(prop);
     /* boradcast to other replicas */
+
+    print_block("on_propose", prop);
+    
     do_broadcast_proposal(prop);
     return bnew;
+}
+
+void HotStuffCore::print_block(std::string calling_method, const hotstuff::Proposal &prop){
+
+    for ( auto const &g: prop.blk->get_graph()) {
+        HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] key = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(g.first).c_str());
+        for (auto const &tx: g.second){
+            HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] val = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(tx).c_str());
+        }
+    }
+
+    DataStream s1;
+    prop.blk->serialize(s1);
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] block (serialized) = %s", calling_method.c_str(), get_id(), prop.proposer, s1.get_hex().c_str());
+    DataStream s2;
+    s2 << *prop.blk;
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] block (salticidae raw) = %s", calling_method.c_str(), get_id(), prop.proposer, s2.get_hex().c_str());
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] block (salticidae raw hash) = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(s2.get_hash()).c_str());
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] block (salticidae hash) = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(salticidae::get_hash(*prop.blk)).c_str());
+    HOTSTUFF_LOG_INFO("[[%s]] [R-%d] [L-%d] broadcasted block = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(prop.blk->get_hash()).c_str());
 }
 
 void HotStuffCore::on_receive_proposal(const Proposal &prop) {
     LOG_PROTO("got %s", std::string(prop).c_str());
     bool self_prop = prop.proposer == get_id();
     block_t bnew = prop.blk;
+    HOTSTUFF_LOG_INFO("[[on_receive_proposal]] [R-%d] [L-%d] broadcasted block Received = %.10s", get_id(), prop.proposer, get_hex(bnew->get_hash()).c_str());
 
     auto const &graph = bnew->get_graph();
     for ( auto const &g: graph) {
