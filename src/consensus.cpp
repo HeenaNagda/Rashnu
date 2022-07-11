@@ -18,6 +18,7 @@
 #include <cassert>
 #include <stack>
 #include <string>
+#include <queue>
 
 #include "hotstuff/util.h"
 #include "hotstuff/consensus.h"
@@ -142,6 +143,12 @@ void HotStuffCore::update(const block_t &nblk) {
     /* otherwise commit */
     std::vector<block_t> commit_queue;
     block_t b;
+
+
+
+    print_all_blocks(nblk, blk);
+
+
     for (b = blk; b->height > b_exec->height; b = b->parents[0])
     { /* TODO: also commit the uncles/aunts */
         commit_queue.push_back(b);
@@ -187,6 +194,32 @@ void HotStuffCore::update(const block_t &nblk) {
     }
     b_exec = blk;                        
     HOTSTUFF_LOG_INFO("[[update Ends]] [R-%d] [L-]", get_id());
+}
+
+// Themis
+void HotStuffCore::print_all_blocks(const block_t &nblk, const block_t &blk){
+    std::queue<block_t> parents_queue;
+    parents_queue.push(nblk);
+
+    HOTSTUFF_LOG_INFO("[[print_all_blocks Start]] [R-%d] [L-] : Below:", get_id());
+    while(!parents_queue.empty()){
+        auto const &b = parents_queue.front();
+        parents_queue.pop();
+
+        for (auto const &pp_block: b->parents){
+            HOTSTUFF_LOG_INFO("[[print_all_blocks]] [R-%d] [L-] hash = %.10s(%d) => %.10s(%d)", get_id(), get_hex(pp_block->get_hash()).c_str(), pp_block->get_height(), get_hex(b->get_hash()).c_str(), b->get_height());
+            parents_queue.push(pp_block);
+        }
+        
+    }
+    HOTSTUFF_LOG_INFO("[[print_all_blocks Ends]] [R-%d] [L-]", get_id());
+
+    HOTSTUFF_LOG_INFO("[[print_all_blocks]] [R-%d] [L-] new block = %.10s(%d), start block = %.10s(%d), b0 = %.10s(%d), b_exec = %.10s(%d)", 
+                        get_id(), 
+                        get_hex(nblk->get_hash()).c_str(), nblk->get_height(),
+                        get_hex(blk->get_hash()).c_str(), blk->get_height(),
+                        get_hex(b0->get_hash()).c_str(), b0->get_height(),
+                        get_hex(b_exec->get_hash()).c_str(), b_exec->get_height());
 }
 
 // Themis
@@ -378,7 +411,9 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
     /** create LocalOrder struct Object **/
     LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
     /** send local order to leader **/
-    HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] LocalOrder Object = %s", get_id(), proposer, local_order);
+    for ( auto const &cmd: local_order.ordered_hashes){
+        HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] LocalOrder Created = %.10s", get_id(), proposer, get_hex(cmd).c_str());
+    }
     do_send_local_order(proposer, local_order);
 }
 
@@ -387,27 +422,43 @@ void HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
     LOG_PROTO("got %s", std::string(local_order).c_str());
     LOG_PROTO("now state: %s", std::string(*this).c_str());
 
-    HOTSTUFF_LOG_INFO("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder on Leader (first ordered hash)= %.10s", local_order.initiator, get_id(), get_hex(local_order.ordered_hashes[0]).c_str());
+    int i=0;
+    for(auto const &h : local_order.ordered_hashes){
+        HOTSTUFF_LOG_INFO("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder on Leader (hash number: %d)= %.10s", local_order.initiator, get_id(), i, get_hex(h).c_str());
+        i++;
+    }
+    
 
 
     // TODO: if this is not a leader then ignore the request/ message 
 
-    /** wait for majority of replicas **/
-    size_t qsize = storage->get_local_order_cache_size();
-    if(qsize >= config.nmajority) { return; }
+    // /** wait for majority of replicas **/
+    // size_t qsize = storage->get_local_order_cache_size();
+    // if(qsize >= config.nmajority) { return; }
     
     /** add new local order to the storage **/
     storage->add_local_order(local_order.initiator, local_order.ordered_hashes, local_order.l_update);
 
     /** Trigger FairPropose() and FairUpdate() **/
-    qsize = storage->get_local_order_cache_size();
-    if(qsize == config.nmajority){
+    size_t qsize = storage->get_local_order_cache_size();
+    if(qsize >= config.nmajority){
+
+        for(auto const &replica: storage->get_local_order_replia_vector()){
+            for(auto const &h: storage->get_ordered_hash_vector(replica)){
+                HOTSTUFF_LOG_INFO("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Global Order started for (%d) = %.10s", local_order.initiator, get_id(), replica, get_hex(h).c_str());
+            }
+        }
+        
+
+
         /* FairPropose() */
         std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph = fair_propose();
         // TODO: Themis FairUpdate()
         std::vector<std::pair<uint256_t, uint256_t>> e_update;
         /** Create a new proposal block and broadcast to the replicas **/
         on_propose(graph, e_update, parents);
+
+        storage->clear_local_order();
     }
 }
 
@@ -514,6 +565,53 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_
         }
     }
     return graph;
+}
+
+// Themis
+std::vector<std::pair<uint256_t, uint256_t>> HotStuffCore::fair_update(){
+     HOTSTUFF_LOG_INFO("[[fair_update START]] [R-%d]", get_id());
+    /** (1) get those replicas from which Leader has received their local order **/
+    std::vector<ReplicaID> replicas = storage->get_local_order_replia_vector();
+
+    /** (2) Create an empty e_update vector **/
+    std::unordered_map<uint256_t,std::unordered_set<uint256_t>> e_update_map;
+    std::vector<std::pair<uint256_t, uint256_t>> e_update;
+
+    // TODO: Themis For all tx and tx' that are part of the same leader proposal ???
+    /** (3)  **/
+    std::unordered_map<uint256_t, std::unordered_map<uint256_t, uint16_t>> edge_count;
+    /* Find edge count */
+    for(auto const &replica: replicas){
+        for (auto const &edge: storage->get_l_update_vector(replica)) {
+            edge_count[edge.first][edge.second]++;
+        }
+    }
+    /* add edges where k>=n(1-gama)+f+1 {>= tx_edge_threshold} */
+    for(auto &from : edge_count){
+        for(auto &to : from.second){
+            uint256_t from_v = from.first;
+            uint256_t to_v = to.first;
+            uint16_t occurance = to.second;
+            if(1.0 * occurance >= config.tx_edge_threshold
+                && e_update_map[to_v].count(from_v)==0){ 
+                    /* edge occurance is above threshold and no reverse edge is already present in graph */
+                    e_update_map[from_v].insert(to_v);
+                }
+        }
+    }
+
+
+    /** (4) update and output e_update vector */
+    for ( auto const &map: e_update_map) {
+        auto const &from_v = map.first;
+        for (auto const &to_v: map.second) {
+            e_update.push_back(std::make_pair(from_v, to_v));
+        }
+    }
+    
+
+    return e_update;
+
 }
 
 /*** end HotStuff protocol logic ***/

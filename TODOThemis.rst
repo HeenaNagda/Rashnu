@@ -10,3 +10,4 @@
 (10) Replicas must include the tx that is not in proposal in last rounds.
 (11) cmd_idx in Finality() is just make the object hash unique or something else ??? 
 (12) FairFinalize(): Should we check edges from every block or only from new block (b/s of 2/3 step hotstuff) ???
+(13) FairPropose(): Themis For all tx and tx' that are part of the same leader proposal ???

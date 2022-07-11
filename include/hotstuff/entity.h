@@ -367,6 +367,12 @@ class EntityStorage {
     }
 
     // Themis
+    void clear_local_order(){
+        ordered_hash_cache.clear();
+        l_update_cache.clear();
+    }
+
+    // Themis
     size_t get_local_order_cache_size(){
         return ordered_hash_cache.size();
     }
