@@ -55,6 +55,7 @@ add_library(hotstuff
     src/consensus.cpp
     src/hotstuff.cpp
     src/graph.cpp
+    src/ordered_list.cpp
     )
 
 option(BUILD_SHARED "build shared library." OFF)

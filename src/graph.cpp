@@ -17,9 +17,7 @@
  *           Project: Themis
  */
 
-#include <unordered_map>
 #include "hotstuff/graph.h"
-#include "hotstuff/entity.h"
 
 #define LOG_INFO HOTSTUFF_LOG_INFO
 #define LOG_DEBUG HOTSTUFF_LOG_DEBUG
@@ -89,7 +87,7 @@ namespace hotstuff {
         visited[vertex] = true;
 
         /* explore children of this vertex */
-        for(auto const child_vertex: graph[vertex]) {
+        for(auto const &child_vertex: graph[vertex]) {
             if(visited[child_vertex]){
                 continue;
             }
@@ -103,7 +101,7 @@ namespace hotstuff {
         scc.push_back(vertex);
 
         /* explore children of this vertex */
-        for(auto const child_vertex: transposed_graph[vertex]) {
+        for(auto const &child_vertex: transposed_graph[vertex]) {
             if(visited[child_vertex]){
                 continue;
             }

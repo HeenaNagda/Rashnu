@@ -29,6 +29,7 @@
 #include "hotstuff/type.h"
 #include "hotstuff/util.h"
 #include "hotstuff/crypto.h"
+#include "hotstuff/ordered_list.h"
 
 namespace hotstuff {
 
@@ -203,6 +204,32 @@ class Block {
     }
 
     // Themis
+    std::vector<std::pair<uint256_t, uint256_t>> get_missing_edges() {
+        std::vector<std::pair<uint256_t, uint256_t>> missing_edges;
+        /* Get all the nodes */
+        std::vector<uint256_t> nodes;
+        for (auto const &g: graph) {
+            nodes.push_back(g.first);
+        }
+
+        /* Check if there is exactly one edge between any 2 pair of vertices */
+        size_t n = nodes.size();
+        uint256_t node_1, node_2;
+        for (size_t i=0; i<n; i++) {
+            node_1 = nodes[i];
+            for (size_t j=i+1; j<n; j++) {
+                node_2 = nodes[j];
+                if(graph[node_1].count(node_2)==0 && graph[node_2].count(node_1)==0) {
+                    // no edge found between these two nodes
+                    missing_edges.push_back(std::make_pair(node_1, node_1));
+                }
+            }
+        }
+
+        return missing_edges;
+    }
+
+    // Themis
     bool is_tournament_graph() {
         /* Get all the nodes */
         std::vector<uint256_t> nodes;
@@ -280,10 +307,14 @@ class EntityStorage {
     std::unordered_map<const uint256_t, command_t> cmd_cache;
     std::unordered_map<ReplicaID, std::vector<uint256_t>> ordered_hash_cache;                     // Themis
     std::unordered_map<ReplicaID, std::vector<std::pair<uint256_t, uint256_t>>> l_update_cache;   // Themis
-    std::vector<uint256_t> local_order_seen;                                                      // Themis
-    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing;                   // Themis
+    OrderedList local_order_seen_cache;                                                           // Themis
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing_cache;             // Themis
 
     public:
+    EntityStorage(){
+        local_order_seen_cache = OrderedList();
+    }
+
     bool is_blk_delivered(const uint256_t &blk_hash) {
         auto it = blk_cache.find(blk_hash);
         if (it == blk_cache.end()) return false;
@@ -401,20 +432,49 @@ class EntityStorage {
 
     // Themis
     void update_local_order_seen(std::vector<uint256_t> const &cmds) {
-        for(auto const cmd: cmds){
-            local_order_seen.push_back(cmd);
+        for(auto const &cmd: cmds){
+            local_order_seen_cache.push_back(cmd);
         }
     }
 
     // Themis
-    std::vector<uint256_t> get_local_order_seen() {
-        return local_order_seen;
-    }  
+    void remove_local_order_seen(uint256_t cmd) {
+        local_order_seen_cache.remove(cmd);
+    }
 
-    // Themis                   
-    bool is_edges_missing (uint256_t from_v, uint256_t to_v) {
-        return edges_missing[from_v].count(to_v)>0 || edges_missing[to_v].count(from_v)>0;
-    }                   
+    // Themis
+    std::vector<std::pair<uint256_t, uint256_t>> get_updated_missing_edges() {
+        std::vector<std::pair<uint256_t, uint256_t>> edges;
+
+        for(auto it_1=local_order_seen_cache.begin(); it_1!=local_order_seen_cache.end(); it_1++) {
+            auto const &from_v = *it_1;
+            for(auto it_2=it_1.next(); it_2!=local_order_seen_cache.end(); it_2++) {
+                auto const &to_v = *it_2;
+                if(edges_missing_cache[from_v].count(to_v)>0 || edges_missing_cache[to_v].count(from_v)>0) {
+                    edges.push_back(std::make_pair(from_v, to_v));
+                }
+            }
+        }
+        return edges;
+    }
+
+    // Themis
+    void add_missing_edge(uint256_t v1, uint256_t v2) {
+        if(edges_missing_cache[v2].count(v1)>0){
+            return;
+        }
+        edges_missing_cache[v1].insert(v2);
+    }   
+
+    // Themis
+    void remove_missing_edge(uint256_t v1, uint256_t v2) {
+        if(edges_missing_cache[v1].count(v2)>0){
+            edges_missing_cache[v1].erase(v2);
+        }
+        if(edges_missing_cache[v2].count(v1)>0){
+            edges_missing_cache[v2].erase(v1);
+        }
+    }             
 
 };
 

@@ -158,6 +158,15 @@ void HotStuffCore::update(const block_t &nblk) {
                                 std::string(*blk) + " " +
                                 std::string(*b_exec));
 
+    // Themis
+    /* Update missing edge cache */
+    for(auto const &edge: nblk->get_e_update()) {
+        storage->remove_missing_edge(edge.first, edge.second);
+    }
+    for(auto const &edge: nblk->get_missing_edges()) {
+        storage->add_missing_edge(edge.first, edge.second);
+    }
+
     HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Commit queue Size = %d", get_id(), commit_queue.size());
     for (auto it = commit_queue.rbegin(); it != commit_queue.rend(); it++)
     {
@@ -180,6 +189,7 @@ void HotStuffCore::update(const block_t &nblk) {
         size_t n = order.size();
         for (size_t i=0; i<n; i++) {
             do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
+            storage->remove_local_order_seen(order[i]);
         }
         // b_exec = *it;
 
@@ -410,18 +420,7 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
     storage->update_local_order_seen(cmds);
 
     /** identify previously missing and seen edges and update l_update **/
-    std::vector<std::pair<uint256_t, uint256_t>> l_update;
-    auto const &local_order_seen = storage->get_local_order_seen();
-    size_t n = local_order_seen.size();
-    for(size_t i=0; i<n; i++) {
-        auto const &from_v = local_order_seen[i];
-        for(size_t j=i+1; j<n; j++){
-            auto const &to_v = local_order_seen[j];
-            if(storage->is_edges_missing(from_v, to_v)){
-                l_update.push_back(std::make_pair(from_v, to_v));
-            }
-        }
-    }
+    auto const &l_update = storage->get_updated_missing_edges();
 
     /** create LocalOrder struct Object **/
     LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
