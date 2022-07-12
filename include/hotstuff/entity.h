@@ -280,6 +280,9 @@ class EntityStorage {
     std::unordered_map<const uint256_t, command_t> cmd_cache;
     std::unordered_map<ReplicaID, std::vector<uint256_t>> ordered_hash_cache;                     // Themis
     std::unordered_map<ReplicaID, std::vector<std::pair<uint256_t, uint256_t>>> l_update_cache;   // Themis
+    std::vector<uint256_t> local_order_seen;                                                      // Themis
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing;                   // Themis
+
     public:
     bool is_blk_delivered(const uint256_t &blk_hash) {
         auto it = blk_cache.find(blk_hash);
@@ -395,6 +398,23 @@ class EntityStorage {
     std::vector<std::pair<uint256_t, uint256_t>> get_l_update_vector(ReplicaID replica) {
         return l_update_cache[replica];
     }
+
+    // Themis
+    void update_local_order_seen(std::vector<uint256_t> const &cmds) {
+        for(auto const cmd: cmds){
+            local_order_seen.push_back(cmd);
+        }
+    }
+
+    // Themis
+    std::vector<uint256_t> get_local_order_seen() {
+        return local_order_seen;
+    }  
+
+    // Themis                   
+    bool is_edges_missing (uint256_t from_v, uint256_t to_v) {
+        return edges_missing[from_v].count(to_v)>0 || edges_missing[to_v].count(from_v)>0;
+    }                   
 
 };
 

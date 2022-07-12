@@ -606,7 +606,7 @@ void HotStuffBase::start(
                 auto const &h = local_order_buffer.front();
                 cmds.push_back(h);
                 local_order_buffer.pop();
-                local_order_buffer_set.insert(h);
+                local_order_buffer_set.erase(h);
             }
 
             for (uint32_t i = 0; i < 1; i++){
