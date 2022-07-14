@@ -221,7 +221,7 @@ class Block {
                 node_2 = nodes[j];
                 if(graph[node_1].count(node_2)==0 && graph[node_2].count(node_1)==0) {
                     // no edge found between these two nodes
-                    missing_edges.push_back(std::make_pair(node_1, node_1));
+                    missing_edges.push_back(std::make_pair(node_1, node_2));
                 }
             }
         }
@@ -307,12 +307,12 @@ class EntityStorage {
     std::unordered_map<const uint256_t, command_t> cmd_cache;
     std::unordered_map<ReplicaID, std::vector<uint256_t>> ordered_hash_cache;                     // Themis
     std::unordered_map<ReplicaID, std::vector<std::pair<uint256_t, uint256_t>>> l_update_cache;   // Themis
-    OrderedList local_order_seen_cache;                                                           // Themis
+    OrderedList *local_order_seen_cache;                                                           // Themis
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing_cache;             // Themis
 
     public:
-    EntityStorage(){
-        local_order_seen_cache = OrderedList();
+    EntityStorage() {
+        local_order_seen_cache = new OrderedList();
     }
 
     bool is_blk_delivered(const uint256_t &blk_hash) {
@@ -433,23 +433,23 @@ class EntityStorage {
     // Themis
     void update_local_order_seen(std::vector<uint256_t> const &cmds) {
         for(auto const &cmd: cmds){
-            local_order_seen_cache.push_back(cmd);
+            local_order_seen_cache->push_back(cmd);
         }
     }
 
     // Themis
     void remove_local_order_seen(uint256_t cmd) {
-        local_order_seen_cache.remove(cmd);
+        local_order_seen_cache->remove(cmd);
     }
 
     // Themis
     std::vector<std::pair<uint256_t, uint256_t>> get_updated_missing_edges() {
         std::vector<std::pair<uint256_t, uint256_t>> edges;
 
-        for(auto it_1=local_order_seen_cache.begin(); it_1!=local_order_seen_cache.end(); it_1++) {
-            auto const &from_v = *it_1;
-            for(auto it_2=it_1.next(); it_2!=local_order_seen_cache.end(); it_2++) {
-                auto const &to_v = *it_2;
+        for(auto it_1=local_order_seen_cache->begin(); it_1!=local_order_seen_cache->end(); it_1++) {
+            auto const from_v = *it_1;
+            for(auto it_2=it_1.next(); it_2!=local_order_seen_cache->end(); it_2++) {
+                auto const to_v = *it_2;
                 if(edges_missing_cache[from_v].count(to_v)>0 || edges_missing_cache[to_v].count(from_v)>0) {
                     edges.push_back(std::make_pair(from_v, to_v));
                 }

@@ -547,15 +547,9 @@ void HotStuffBase::start(
         HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] cmd_pending reg_handler Invoked", get_id(), pmaker->get_proposer());
 
         std::pair<uint256_t, commit_cb_t> e;
-        // Themis : Add pending decisions into this round local order again, 
-        // as they were skipped previously by the leader (due to non majority)
 
-        for ( auto const &pending: get_decision_waiting()){
-            if(!local_order_buffer_set.count(pending.first)){
-                local_order_buffer.push(pending.first);
-                local_order_buffer_set.insert(pending.first);
-            }
-        }
+        // TODO: Themis : Add pending decisions into this round local order again, 
+        // as they were skipped previously by the leader (due to non majority) ???
 
         while (q.try_dequeue(e))
         {
@@ -571,11 +565,26 @@ void HotStuffBase::start(
 
             // Themis
             local_order_buffer.push(cmd_hash);
-            local_order_buffer_set.insert(cmd_hash);
             HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Push commans to local buffer = %.10s", get_id(), proposer, get_hex(cmd_hash).c_str());
 
             if(local_order_buffer.size() >= blk_size){
-                break;
+                ReplicaID proposer = pmaker->get_proposer();
+                std::vector<uint256_t> cmds;
+                for (uint32_t i = 0; i < blk_size; i++)
+                {
+                    auto const &h = local_order_buffer.front();
+                    cmds.push_back(h);
+                    local_order_buffer.pop();
+                }
+
+                for (uint32_t i = 0; i < 1; i++){
+                    HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Created List of commands and sending to pacemaker (%d) = %.10s", get_id(), proposer, i, get_hex(cmds[i]).c_str());
+                }
+                pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {
+                    on_local_order(proposer, cmds);
+                });
+
+                return true;
             }
             /*
             if (proposer != get_id()) continue;
@@ -595,28 +604,6 @@ void HotStuffBase::start(
                 return true;
             }
             */
-        }
-
-        // Themis
-        if (local_order_buffer.size() >= blk_size) {
-            ReplicaID proposer = pmaker->get_proposer();
-            std::vector<uint256_t> cmds;
-            for (uint32_t i = 0; i < blk_size; i++)
-            {
-                auto const &h = local_order_buffer.front();
-                cmds.push_back(h);
-                local_order_buffer.pop();
-                local_order_buffer_set.erase(h);
-            }
-
-            for (uint32_t i = 0; i < 1; i++){
-                HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Created List of commands and sending to pacemaker (%d) = %.10s", get_id(), proposer, i, get_hex(cmds[i]).c_str());
-            }
-            pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {
-                on_local_order(proposer, cmds);
-            });
-
-            return true;
         }
 
         return false;

@@ -25,11 +25,6 @@
 #define LOG_PROTO HOTSTUFF_LOG_PROTO
 
 namespace hotstuff {
-    LinkedNode::LinkedNode(uint256_t cmd_hash){
-        this->cmd_hash = cmd_hash;
-        this->next = nullptr;
-        this->prev = nullptr;
-    }
 
     OrderedList::Iterator::Iterator(LinkedNode* new_ptr) : node_ptr(new_ptr) {}
 
@@ -44,7 +39,7 @@ namespace hotstuff {
 
     OrderedList::Iterator OrderedList::Iterator::operator++(int) {
         Iterator it = *this;
-        it.node_ptr = it.node_ptr->next;
+        node_ptr = node_ptr->next;
         return it;
     }
 
@@ -65,8 +60,8 @@ namespace hotstuff {
 
     OrderedList::OrderedList(){
         /* Head and tail nodes of this list are the dummy nodes */
-        head = new LinkedNode(0);
-        tail = new LinkedNode(0);
+        head = new LinkedNode(salticidae::get_hash(0));
+        tail = new LinkedNode(salticidae::get_hash(0));
         head->next = tail;
         tail->prev = head;
     }

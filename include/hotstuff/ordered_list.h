@@ -31,7 +31,8 @@ struct LinkedNode
     LinkedNode* next;
     LinkedNode* prev;
 
-    LinkedNode(const uint256_t cmd_hash);
+    public:
+    LinkedNode(uint256_t cmd_hash) : cmd_hash(cmd_hash), next(nullptr), prev(nullptr) {}
 };
 
 class OrderedList{

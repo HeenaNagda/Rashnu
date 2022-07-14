@@ -420,8 +420,13 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
     storage->update_local_order_seen(cmds);
 
     /** identify previously missing and seen edges and update l_update **/
-    auto const &l_update = storage->get_updated_missing_edges();
+    auto const l_update = storage->get_updated_missing_edges();
+    HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] l_update sent = ", get_id(), proposer);
+    for(auto const &edge: l_update){
+        HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] %.10s -> %.10s", get_id(), proposer, get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
+    }
 
+    // std::vector<std::pair<uint256_t, uint256_t>> l_update;
     /** create LocalOrder struct Object **/
     LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
     /** send local order to leader **/
@@ -469,6 +474,7 @@ void HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
         std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph = fair_propose();
         // TODO: Themis FairUpdate()
         std::vector<std::pair<uint256_t, uint256_t>> e_update = fair_update();
+        // std::vector<std::pair<uint256_t, uint256_t>> e_update;
         /** Create a new proposal block and broadcast to the replicas **/
         on_propose(graph, e_update, parents);
 
@@ -595,15 +601,18 @@ std::vector<std::pair<uint256_t, uint256_t>> HotStuffCore::fair_update(){
     /** (3)  **/
     std::unordered_map<uint256_t, std::unordered_map<uint256_t, uint16_t>> edge_count;
     /* Find edge count */
+    
     for(auto const &replica: replicas){
+        HOTSTUFF_LOG_INFO("[[fair_update]] [R-%d] [L-] l_update Received from replica (%d)= ", get_id(), replica);
         for (auto const &edge: storage->get_l_update_vector(replica)) {
             edge_count[edge.first][edge.second]++;
+            HOTSTUFF_LOG_INFO("[[fair_update]] [R-%d] [L-] %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
         }
     }
     /* add edges where k>=n(1-gama)+f+1 {>= tx_edge_threshold} */
     for(auto &from : edge_count){
-        uint256_t from_v = from.first;
         for(auto &to : from.second){
+            uint256_t from_v = from.first;
             uint256_t to_v = to.first;
             uint16_t occurance = to.second;
             if(1.0 * occurance >= config.tx_edge_threshold
@@ -617,13 +626,18 @@ std::vector<std::pair<uint256_t, uint256_t>> HotStuffCore::fair_update(){
 
     /** (4) update and output e_update vector */
     for ( auto const &map: e_update_map) {
-        auto const &from_v = map.first;
-        for (auto const &to_v: map.second) {
+        auto const from_v = map.first;
+        for (auto const to_v: map.second) {
             e_update.push_back(std::make_pair(from_v, to_v));
         }
     }
-    
 
+    HOTSTUFF_LOG_INFO("[[fair_update]] [R-%d] [L-] e_update derived = ", get_id());
+    for(auto const &edge: e_update){
+        HOTSTUFF_LOG_INFO("[[fair_update]] [R-%d] [L-] %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
+    }
+    
+    HOTSTUFF_LOG_INFO("[[fair_update ENDS]] [R-%d]", get_id());
     return e_update;
 
 }

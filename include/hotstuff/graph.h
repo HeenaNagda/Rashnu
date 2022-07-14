@@ -21,9 +21,7 @@
 #define _THEMIS_GRAPH_H
 
 #include <unordered_map>
-#include <unordered_set>
-#include <stack>
-#include "salticidae/stream.h"
+#include "hotstuff/entity.h"
 
 namespace hotstuff {
 
