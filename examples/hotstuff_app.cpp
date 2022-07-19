@@ -355,6 +355,7 @@ void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytea
     ev_stat_timer = TimerEvent(ec, [this](TimerEvent &) {
         HotStuff::print_stat();
         HotStuffApp::print_stat();
+        // get_pace_maker()->on_pending_order();       // Themis
         //HotStuffCore::prune(100);
         ev_stat_timer.add(stat_period);
     });

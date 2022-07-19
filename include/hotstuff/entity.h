@@ -204,6 +204,14 @@ class Block {
     }
 
     // Themis
+    void remove_cmd(uint256_t cmd_hash){
+        graph.erase(cmd_hash);
+        for(auto &g: graph){
+            g.second.erase(cmd_hash);
+        }
+    }
+
+    // Themis
     std::vector<std::pair<uint256_t, uint256_t>> get_missing_edges() {
         std::vector<std::pair<uint256_t, uint256_t>> missing_edges;
         /* Get all the nodes */
@@ -394,10 +402,11 @@ class EntityStorage {
     }
 
     // Themis
-    void add_local_order(ReplicaID rid, const std::vector<uint256_t> &ordered_hash, 
-                            const std::vector<std::pair<uint256_t, uint256_t>> &l_update){
-        ordered_hash_cache.insert(std::make_pair(rid, ordered_hash));
-        l_update_cache.insert(std::make_pair(rid, l_update));
+    void add_local_order(ReplicaID rid, const std::vector<uint256_t> ordered_hash, 
+                            const std::vector<std::pair<uint256_t, uint256_t>> l_update){
+        /* Overwriting old values if exists */
+        ordered_hash_cache[rid] = ordered_hash;
+        l_update_cache[rid] = l_update;
     }
 
     // Themis
@@ -446,10 +455,22 @@ class EntityStorage {
     std::vector<std::pair<uint256_t, uint256_t>> get_updated_missing_edges() {
         std::vector<std::pair<uint256_t, uint256_t>> edges;
 
+        
+        HOTSTUFF_LOG_INFO("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache size = %d", local_order_seen_cache->get_size());
+        HOTSTUFF_LOG_INFO("[[get_updated_missing_edges]] [R-] [L-] edges_missing_cache size = %d", edges_missing_cache.size());
+        for(auto const &cache: edges_missing_cache){
+            auto const from_v = cache.first;
+            for(auto const to_v: cache.second){
+                HOTSTUFF_LOG_INFO("[[get_updated_missing_edges]] [R-] [L-] edges_missing_cache edge = %.10s -> %.10s", get_hex(from_v).c_str(), get_hex(to_v).c_str());
+            }
+        }
+
+
         for(auto it_1=local_order_seen_cache->begin(); it_1!=local_order_seen_cache->end(); it_1++) {
             auto const from_v = *it_1;
             for(auto it_2=it_1.next(); it_2!=local_order_seen_cache->end(); it_2++) {
                 auto const to_v = *it_2;
+                HOTSTUFF_LOG_INFO("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache edge = %.10s -> %.10s", get_hex(from_v).c_str(), get_hex(to_v).c_str());
                 if(edges_missing_cache[from_v].count(to_v)>0 || edges_missing_cache[to_v].count(from_v)>0) {
                     edges.push_back(std::make_pair(from_v, to_v));
                 }

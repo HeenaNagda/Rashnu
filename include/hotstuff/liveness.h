@@ -53,6 +53,7 @@ class PaceMaker {
     virtual void impeach() {}
     virtual void on_consensus(const block_t &) {}
     virtual size_t get_pending_size() = 0;
+    virtual void on_pending_order() {}              // Themis
 };
 
 using pacemaker_bt = BoxObj<PaceMaker>;
@@ -251,6 +252,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         hsc->async_wait_proposal().then([this](const Proposal &prop) {
             auto &pblk = prop_blk[hsc->get_id()];
             if (!pblk) pblk = prop.blk;
+            HOTSTUFF_LOG_INFO("[[reg_proposal]] [R-] [L-] prop_blk[%d] = %.10s", proposer, get_hex(pblk->get_hash()).c_str());
             if (rotating) reg_proposal();
         });
     }
@@ -259,6 +261,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         hsc->async_wait_receive_proposal().then([this](const Proposal &prop) {
             auto &pblk = prop_blk[prop.proposer];
             if (!pblk) pblk = prop.blk;
+            HOTSTUFF_LOG_INFO("[[reg_receive_proposal]] [R-] [L-] prop_blk[%d] = %.10s", proposer, get_hex(pblk->get_hash()).c_str());
             if (rotating) reg_receive_proposal();
         });
     }
@@ -291,7 +294,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
 
     // TODO: Themis
     void do_new_consensus(int x, const std::vector<uint256_t> &cmds) {
-        // TODO: Themis : instead of having empty graph, it should by passed through this method itself
+        // TODO: Themis : instead of having empty graph, it should be passed through this method itself
         std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;
         std::vector<std::pair<uint256_t, uint256_t>> e_update;
         auto blk = hsc->on_propose(graph, e_update, get_parents(), bytearray_t());
@@ -371,14 +374,40 @@ class PMRoundRobinProposer: virtual public PaceMaker {
     void on_consensus(const block_t &blk) override {
         timer.del();
         exp_timeout = base_timeout;
-        if (prop_blk[proposer] == blk)
-            stop_rotate();
+        HOTSTUFF_LOG_INFO("[[on_consensus]] [R-] [L-%d] prop_blk[%d] = %.10s, Current block = %.10s", proposer, proposer, get_hex(prop_blk[proposer]->get_hash()).c_str(), get_hex(blk->get_hash()).c_str());
+        stop_rotate();
+        // if (prop_blk[proposer] == blk)
+        //     stop_rotate();
     }
 
     void impeach() override {
         if (rotating) return;
         rotate();
         HOTSTUFF_LOG_INFO("schedule to impeach the proposer");
+    }
+
+    void on_pending_order() override {
+        auto hs = static_cast<hotstuff::HotStuffBase *>(hsc);
+        hs->get_tcall().async_call([this, hs](salticidae::ThreadCall::Handle &) {
+            auto buffer = hs->get_local_order_buffer();
+            HOTSTUFF_LOG_INFO("[[on_pending_order]] [R-] [L-] pending size = %d", buffer.size());
+            if (!buffer.size()) return;
+            HOTSTUFF_LOG_PROTO("reproposing pending commands");
+            
+            std::vector<uint256_t> cmds;
+            while (!buffer.empty())
+            {
+                auto const &h = buffer.front();
+                cmds.push_back(h);
+                buffer.pop();
+            }
+                
+            HOTSTUFF_LOG_INFO("[[on_pending_order]] [R-] [L-] pending commands size = %d", cmds.size());
+            for (auto const &cmd: cmds){
+                HOTSTUFF_LOG_INFO("[[on_pending_order]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
+            }
+            hs->on_local_order(proposer, cmds);
+        });
     }
 
     public:

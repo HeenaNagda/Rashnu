@@ -510,6 +510,21 @@ void HotStuffBase::do_decide(Finality &&fin) {
 }
 
 // Themis
+void HotStuffBase::do_remove_duplicates(block_t const &blk) {
+    std::vector<uint256_t> cmd_to_remove;
+    for(auto &g: blk->get_graph()){
+        auto cmd_hash = g.first;
+        auto it = decision_waiting.find(cmd_hash);
+        if(it == decision_waiting.end()) {
+            cmd_to_remove.push_back(cmd_hash);
+        }
+    }
+
+    for(auto cmd_hash: cmd_to_remove){
+        HOTSTUFF_LOG_INFO("[[do_remove_duplicates]] [R-%d] [L-%d] removed duplicate tx = %.10s", get_id(), get_hex(cmd_hash).c_str());
+        blk->remove_cmd(cmd_hash);
+    }
+}
 
 
 HotStuffBase::~HotStuffBase() {}
@@ -577,7 +592,7 @@ void HotStuffBase::start(
                     local_order_buffer.pop();
                 }
 
-                for (uint32_t i = 0; i < 1; i++){
+                for (uint32_t i = 0; i < blk_size; i++){
                     HOTSTUFF_LOG_INFO("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Created List of commands and sending to pacemaker (%d) = %.10s", get_id(), proposer, i, get_hex(cmds[i]).c_str());
                 }
                 pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {

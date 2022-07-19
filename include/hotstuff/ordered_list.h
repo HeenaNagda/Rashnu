@@ -64,6 +64,7 @@ class OrderedList{
     void remove(uint256_t cmd_hash);
     Iterator begin() const;
     Iterator end() const;
+    size_t get_size();
 };
 
 }

@@ -96,6 +96,17 @@ void HotStuffCore::update_hqc(const block_t &_hqc, const quorum_cert_bt &qc) {
 
 // TODO: Themis
 void HotStuffCore::update(const block_t &nblk) {
+     // Themis
+    /* Update missing edge cache */
+    for(auto const &edge: nblk->get_e_update()) {
+        storage->remove_missing_edge(edge.first, edge.second);
+        HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Removing missing edge = %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
+    }
+    for(auto const &edge: nblk->get_missing_edges()) {
+        storage->add_missing_edge(edge.first, edge.second);
+        HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Adding missing edge = %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
+    }
+
     /* nblk = b*, blk2 = b'', blk1 = b', blk = b */
     HOTSTUFF_LOG_INFO("[[update Start]] [R-%d] [L-] new block = %.10s", get_id(),get_hex(nblk->get_hash()).c_str());
 #ifndef HOTSTUFF_TWO_STEP
@@ -146,7 +157,7 @@ void HotStuffCore::update(const block_t &nblk) {
 
 
 
-    print_all_blocks(nblk, blk);
+    // print_all_blocks(nblk, blk);
 
 
     for (b = blk; b->height > b_exec->height; b = b->parents[0])
@@ -157,15 +168,6 @@ void HotStuffCore::update(const block_t &nblk) {
         throw std::runtime_error("safety breached :( " +
                                 std::string(*blk) + " " +
                                 std::string(*b_exec));
-
-    // Themis
-    /* Update missing edge cache */
-    for(auto const &edge: nblk->get_e_update()) {
-        storage->remove_missing_edge(edge.first, edge.second);
-    }
-    for(auto const &edge: nblk->get_missing_edges()) {
-        storage->add_missing_edge(edge.first, edge.second);
-    }
 
     HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Commit queue Size = %d", get_id(), commit_queue.size());
     for (auto it = commit_queue.rbegin(); it != commit_queue.rend(); it++)
@@ -179,6 +181,7 @@ void HotStuffCore::update(const block_t &nblk) {
         if(order.empty() && !blk->get_graph().empty()) {
             /* this is not a tournament graph: stop looking at further blocks */
             HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Not a tournament Graph", get_id());
+            do_consensus(blk);
             break;
         }
 
@@ -191,7 +194,7 @@ void HotStuffCore::update(const block_t &nblk) {
             do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
             storage->remove_local_order_seen(order[i]);
         }
-        // b_exec = *it;
+        b_exec = blk;
 
         HOTSTUFF_LOG_INFO("[[update Decided]] [R-%d] [L-]", get_id());
 
@@ -202,7 +205,7 @@ void HotStuffCore::update(const block_t &nblk) {
         //     do_decide(Finality(id, 1, i, blk->height,
         //                         blk->cmds[i], blk->get_hash()));
     }
-    b_exec = blk;                        
+    // b_exec = blk;                        
     HOTSTUFF_LOG_INFO("[[update Ends]] [R-%d] [L-]", get_id());
 }
 
@@ -237,6 +240,11 @@ std::vector<uint256_t> HotStuffCore::
                         fair_finalize(block_t const &blk, 
                         std::vector<std::pair<uint256_t, uint256_t>> const &e_update){
     auto &graph = blk->get_graph();
+
+    /** (1.0) Themis: For all transaction tx in Bi, if tx is not in pending queue then remove from the Bi.G 
+     *  This is to remove duplicate tx proposals **/
+    do_remove_duplicates(blk);
+
     
     /** (1) For all Bi and transactions tx, tx0 in Bi that do not have an edge between them, 
      * if (tx; tx0) is in some Bj.e_update, then add that edge to Bi.G **/
@@ -472,13 +480,14 @@ void HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
 
         /* FairPropose() */
         std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph = fair_propose();
-        // TODO: Themis FairUpdate()
+        /* FairUpdate() */
         std::vector<std::pair<uint256_t, uint256_t>> e_update = fair_update();
         // std::vector<std::pair<uint256_t, uint256_t>> e_update;
+        storage->clear_local_order();
+        HOTSTUFF_LOG_INFO("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Cleared Local Order", local_order.initiator, get_id());
         /** Create a new proposal block and broadcast to the replicas **/
         on_propose(graph, e_update, parents);
 
-        storage->clear_local_order();
     }
 }
 

@@ -213,8 +213,8 @@ class HotStuffBase: public HotStuffCore {
 
     void do_broadcast_proposal(const Proposal &) override;
     void do_vote(ReplicaID, const Vote &) override;
-    // Themis
-    void do_send_local_order(ReplicaID, const LocalOrder &) override;
+    void do_send_local_order(ReplicaID, const LocalOrder &) override;       // Themis
+    void do_remove_duplicates(block_t const &blk) override;                       // Themis
     void do_decide(Finality &&) override;
     void do_consensus(const block_t &blk) override;
     void print_block(std::string calling_method, const hotstuff::Proposal &prop);
@@ -247,6 +247,7 @@ class HotStuffBase: public HotStuffCore {
 
     size_t size() const { return peers.size(); }
     const auto &get_decision_waiting() const { return decision_waiting; }
+    auto &get_local_order_buffer() {return local_order_buffer; }
     ThreadCall &get_tcall() { return tcall; }
     PaceMaker *get_pace_maker() { return pmaker.get(); }
     void print_stat() const;

@@ -145,8 +145,9 @@ class HotStuffCore {
      * while safety is always guaranteed by HotStuffCore. */
     virtual void do_vote(ReplicaID last_proposer, const Vote &vote) = 0;
     /** Called upon sending out local ordering to the next proposer. */
-    // Themis
-    virtual void do_send_local_order(ReplicaID proposer, const LocalOrder &local_order) = 0;
+    virtual void do_send_local_order(ReplicaID proposer, const LocalOrder &local_order) = 0;        // Themis
+    /** Remove duplicate transactions from the proposed graph **/
+    virtual void do_remove_duplicates(block_t const &blk) = 0;        // Themis
 
     /* The user plugs in the detailed instances for those
      * polymorphic data types. */

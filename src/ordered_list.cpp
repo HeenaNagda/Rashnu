@@ -102,4 +102,8 @@ namespace hotstuff {
         Iterator it = Iterator(tail);
         return it;
     }
+
+    size_t OrderedList::get_size(){
+        return linked_cache.size();
+    }
 }
