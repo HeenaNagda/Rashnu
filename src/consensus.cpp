@@ -157,7 +157,7 @@ void HotStuffCore::update(const block_t &nblk) {
 
 
 
-    // print_all_blocks(nblk, blk);
+    print_all_blocks(nblk, blk);
 
 
     for (b = blk; b->height > b_exec->height; b = b->parents[0])

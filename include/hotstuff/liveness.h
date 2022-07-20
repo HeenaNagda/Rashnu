@@ -375,9 +375,8 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         timer.del();
         exp_timeout = base_timeout;
         HOTSTUFF_LOG_INFO("[[on_consensus]] [R-] [L-%d] prop_blk[%d] = %.10s, Current block = %.10s", proposer, proposer, get_hex(prop_blk[proposer]->get_hash()).c_str(), get_hex(blk->get_hash()).c_str());
-        stop_rotate();
-        // if (prop_blk[proposer] == blk)
-        //     stop_rotate();
+        if (prop_blk[proposer] == blk)
+            stop_rotate();
     }
 
     void impeach() override {

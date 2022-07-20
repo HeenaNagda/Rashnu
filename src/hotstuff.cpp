@@ -587,8 +587,7 @@ void HotStuffBase::start(
                 std::vector<uint256_t> cmds;
                 for (uint32_t i = 0; i < blk_size; i++)
                 {
-                    auto const &h = local_order_buffer.front();
-                    cmds.push_back(h);
+                    cmds.push_back(local_order_buffer.front());
                     local_order_buffer.pop();
                 }
 
