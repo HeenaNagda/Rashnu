@@ -106,6 +106,11 @@ void HotStuffCore::update(const block_t &nblk) {
         storage->add_missing_edge(edge.first, edge.second);
         HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Adding missing edge = %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
     }
+    /* Update proposal level local order cache */
+    for(auto const &g: nblk->get_graph()) {
+        storage->remove_local_order_seen_propose_level(g.first);
+        HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Removing Proposed cmd from seen = %.10s", get_id(), get_hex(g.first).c_str());
+    }
 
     /* nblk = b*, blk2 = b'', blk1 = b', blk = b */
     HOTSTUFF_LOG_INFO("[[update Start]] [R-%d] [L-] new block = %.10s", get_id(),get_hex(nblk->get_hash()).c_str());
@@ -191,7 +196,7 @@ void HotStuffCore::update(const block_t &nblk) {
         size_t n = order.size();
         for (size_t i=0; i<n; i++) {
             do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
-            storage->remove_local_order_seen(order[i]);
+            storage->remove_local_order_seen_execute_level(order[i]);
         }
         b_exec = blk;
 
@@ -418,7 +423,11 @@ void HotStuffCore::on_receive_vote(const Vote &vote) {
 }
 
 // Themis
-void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds) {
+void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order) {
+    /** Add seen but Unproposed commands to the local order **/
+    auto cmds = storage->get_unproposed_cmds();
+    cmds.insert(cmds.end(), order.begin(), order.end());
+
     /** update seen edges **/
     storage->update_local_order_seen(cmds);
 
@@ -427,6 +436,12 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
     HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] l_update sent = ", get_id(), proposer);
     for(auto const &edge: l_update){
         HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] %.10s -> %.10s", get_id(), proposer, get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
+    }
+
+    if(cmds.size()==0 && l_update.size()==0){
+        /* Nothing to send to Leader */
+        HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] Nothing to order", get_id(), proposer);
+        return;
     }
 
     // std::vector<std::pair<uint256_t, uint256_t>> l_update;
@@ -643,7 +658,15 @@ std::vector<std::pair<uint256_t, uint256_t>> HotStuffCore::fair_update(){
     
     HOTSTUFF_LOG_INFO("[[fair_update ENDS]] [R-%d]", get_id());
     return e_update;
+}
 
+void HotStuffCore::reorder(ReplicaID proposer) {
+    // TODO: Themis
+    /** Get unordered cmds ??? **/
+
+    HOTSTUFF_LOG_INFO("[[reorder]] [R-%d] invoked", get_id());
+    /** Create Local Order **/
+    on_local_order(proposer, std::vector<uint256_t>());  
 }
 
 /*** end HotStuff protocol logic ***/
