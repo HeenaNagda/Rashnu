@@ -509,23 +509,6 @@ void HotStuffBase::do_decide(Finality &&fin) {
     }
 }
 
-// Themis
-void HotStuffBase::do_remove_duplicates(block_t const &blk) {
-    std::vector<uint256_t> cmd_to_remove;
-    for(auto &g: blk->get_graph()){
-        auto cmd_hash = g.first;
-        auto it = decision_waiting.find(cmd_hash);
-        if(it == decision_waiting.end()) {
-            cmd_to_remove.push_back(cmd_hash);
-        }
-    }
-
-    for(auto cmd_hash: cmd_to_remove){
-        HOTSTUFF_LOG_INFO("[[do_remove_duplicates]] [R-%d] [L-%d] removed duplicate tx = %.10s", get_id(), get_hex(cmd_hash).c_str());
-        blk->remove_cmd(cmd_hash);
-    }
-}
-
 
 HotStuffBase::~HotStuffBase() {}
 

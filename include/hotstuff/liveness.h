@@ -346,28 +346,27 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         locked = false;
         last_proposed = hsc->get_genesis();
         proposer_update_last_proposed();
-        // if (proposer == hsc->get_id())
-        // {
+        if (proposer == hsc->get_id())
+        {
             auto hs = static_cast<hotstuff::HotStuffBase *>(hsc);
             hs->do_elected();
             hs->get_tcall().async_call([this, hs](salticidae::ThreadCall::Handle &) {
-                auto &pending = hs->get_decision_waiting();
-                HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending size = %d", pending.size());
-                if (!pending.size()) return;
+                // auto &pending = hs->get_decision_waiting();
+                // HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending size = %d", pending.size());
+                // if (!pending.size()) return;
                 HOTSTUFF_LOG_PROTO("reproposing pending commands");
-                std::vector<uint256_t> cmds;
-                for (auto &p: pending){
-                    cmds.push_back(p.first);
-                }
+                // std::vector<uint256_t> cmds;
+                // for (auto &p: pending){
+                //     cmds.push_back(p.first);
+                // }
                     
-                HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending commands size = %d", cmds.size());
-                for (auto const &cmd: cmds){
-                    HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
-                }
-                hs->on_local_order(proposer, cmds);
+                // HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending commands size = %d", cmds.size());
+                // for (auto const &cmd: cmds){
+                //     HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
+                // }
                 // do_new_consensus(0, cmds);       // TODO: Themis
             });
-        // }
+        }
     }
 
     protected:

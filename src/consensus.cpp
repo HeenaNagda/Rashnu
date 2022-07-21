@@ -181,7 +181,6 @@ void HotStuffCore::update(const block_t &nblk) {
         if(order.empty() && !blk->get_graph().empty()) {
             /* this is not a tournament graph: stop looking at further blocks */
             HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Not a tournament Graph", get_id());
-            do_consensus(blk);
             break;
         }
 
@@ -240,10 +239,6 @@ std::vector<uint256_t> HotStuffCore::
                         fair_finalize(block_t const &blk, 
                         std::vector<std::pair<uint256_t, uint256_t>> const &e_update){
     auto &graph = blk->get_graph();
-
-    /** (1.0) Themis: For all transaction tx in Bi, if tx is not in pending queue then remove from the Bi.G 
-     *  This is to remove duplicate tx proposals **/
-    do_remove_duplicates(blk);
 
     
     /** (1) For all Bi and transactions tx, tx0 in Bi that do not have an edge between them, 
