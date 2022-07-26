@@ -111,7 +111,7 @@ class HotStuffCore {
 
     void print_block(std::string calling_method,const hotstuff::Proposal &prop);                       // Themis
     /** Call to submit local order to the current leader **/
-    void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order);       // Themis
+    void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order, bool is_reorder=false);       // Themis
     /** Called when local order is received on Leader from a Replica  **/
     void on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);   // Themis
     /** FairFinalize() **/

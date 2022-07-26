@@ -6,4 +6,7 @@
 # stable.
 
 # ./examples/hotstuff-client --idx 0 --iter -1 --max-async 4
-./examples/themis-client --idx 0 --iter -1 --max-async 4
+
+./examples/themis-client --idx 0 --iter -1 --max-async 8
+# gdb -ex r -ex bt -ex q --args ./examples/themis-client --idx 0 --iter -1 --max-async 10
+# valgrind --leak-check=full ./examples/themis-client --idx 0 --iter -1 --max-async 10

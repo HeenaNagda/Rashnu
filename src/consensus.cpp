@@ -423,10 +423,14 @@ void HotStuffCore::on_receive_vote(const Vote &vote) {
 }
 
 // Themis
-void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order) {
+void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order, bool is_reorder) {
     /** Add seen but Unproposed commands to the local order **/
-    auto cmds = storage->get_unproposed_cmds();
-    cmds.insert(cmds.end(), order.begin(), order.end());
+    auto cmds = order;
+
+    if(!is_reorder){
+        // cmds = storage->get_unproposed_cmds();
+        // cmds.insert(cmds.end(), order.begin(), order.end());
+    }
 
     /** update seen edges **/
     storage->update_local_order_seen(cmds);
@@ -666,7 +670,7 @@ void HotStuffCore::reorder(ReplicaID proposer) {
 
     HOTSTUFF_LOG_INFO("[[reorder]] [R-%d] invoked", get_id());
     /** Create Local Order **/
-    on_local_order(proposer, std::vector<uint256_t>());  
+    on_local_order(proposer, std::vector<uint256_t>(), true);  
 }
 
 /*** end HotStuff protocol logic ***/
