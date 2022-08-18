@@ -1,1 +1,0 @@
-{"status": "stopped", "spawn_results": {"client0": {"changed": false, "status": 0, "pid": 10151, "cmd": "/users/heenan/libhotstuff/examples/hotstuff-client --idx 1 --cid 0 --iter 200000 --max-async 175", "cwd": "/users/heenan/testbed/myrun2_cli/1/conf", "failed": false}}}
