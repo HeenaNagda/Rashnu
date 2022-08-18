@@ -252,7 +252,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         hsc->async_wait_proposal().then([this](const Proposal &prop) {
             auto &pblk = prop_blk[hsc->get_id()];
             if (!pblk) pblk = prop.blk;
-            HOTSTUFF_LOG_INFO("[[reg_proposal]] [R-] [L-] prop_blk[%d] = %.10s", proposer, get_hex(pblk->get_hash()).c_str());
+            HOTSTUFF_LOG_DEBUG("[[reg_proposal]] [R-] [L-] prop_blk[%d] = %.10s", proposer, get_hex(pblk->get_hash()).c_str());
             if (rotating) reg_proposal();
         });
     }
@@ -261,7 +261,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         hsc->async_wait_receive_proposal().then([this](const Proposal &prop) {
             auto &pblk = prop_blk[prop.proposer];
             if (!pblk) pblk = prop.blk;
-            HOTSTUFF_LOG_INFO("[[reg_receive_proposal]] [R-] [L-] prop_blk[%d] = %.10s", proposer, get_hex(pblk->get_hash()).c_str());
+            HOTSTUFF_LOG_DEBUG("[[reg_receive_proposal]] [R-] [L-] prop_blk[%d] = %.10s", proposer, get_hex(pblk->get_hash()).c_str());
             if (rotating) reg_receive_proposal();
         });
     }
@@ -312,6 +312,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
     }
 
     void on_exp_timeout(TimerEvent &) {
+        HOTSTUFF_LOG_DEBUG("[[on_exp_timeout]] [R-%d] [L-%d]", hsc->get_id(), proposer);
         if (proposer == hsc->get_id())
             do_new_consensus(0, std::vector<uint256_t>{});
         timer = TimerEvent(ec, [this](TimerEvent &){ rotate(); });
@@ -325,6 +326,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         reg_receive_proposal();
         prop_blk.clear();
         rotating = true;
+        HOTSTUFF_LOG_DEBUG("[[rotate]] rotating = %d", rotating);
         proposer = (proposer + 1) % hsc->get_config().nreplicas;
         HOTSTUFF_LOG_PROTO("Pacemaker: rotate to %d", proposer);
         pm_qc_finish.reject();
@@ -343,6 +345,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         pm_wait_propose.reject();
         pm_qc_manual.reject();
         rotating = false;
+        HOTSTUFF_LOG_DEBUG("[[stop_rotate]] rotating = %d", rotating);
         locked = false;
         last_proposed = hsc->get_genesis();
         proposer_update_last_proposed();
@@ -352,18 +355,20 @@ class PMRoundRobinProposer: virtual public PaceMaker {
             hs->do_elected();
             hs->get_tcall().async_call([this, hs](salticidae::ThreadCall::Handle &) {
                 auto &pending = hs->get_decision_waiting();
-                HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending size = %d", pending.size());
+                HOTSTUFF_LOG_DEBUG("[[stop_rotate]] [R-] [L-] pending size = %d", pending.size());
                 if (!pending.size()) return;
                 HOTSTUFF_LOG_PROTO("reproposing pending commands");
                 std::vector<uint256_t> cmds;
                 for (auto &p: pending){
                     cmds.push_back(p.first);
                 }
-                    
-                HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending commands size = %d", cmds.size());
+
+#ifdef HOTSTUFF_ENABLE_LOG_DEBUG    
+                HOTSTUFF_LOG_DEBUG("[[stop_rotate]] [R-] [L-] pending commands size = %d", cmds.size());
                 for (auto const &cmd: cmds){
-                    HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
+                    HOTSTUFF_LOG_DEBUG("[[stop_rotate]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
                 }
+#endif
                 hs->on_local_order(proposer, cmds);
                 // do_new_consensus(0, cmds);       // TODO: Themis
             });
@@ -374,13 +379,15 @@ class PMRoundRobinProposer: virtual public PaceMaker {
     void on_consensus(const block_t &blk) override {
         timer.del();
         exp_timeout = base_timeout;
-        HOTSTUFF_LOG_INFO("[[on_consensus]] [R-] [L-%d] prop_blk[%d] = %.10s, Current block = %.10s", proposer, proposer, get_hex(prop_blk[proposer]->get_hash()).c_str(), get_hex(blk->get_hash()).c_str());
+        HOTSTUFF_LOG_DEBUG("[[on_consensus]] [R-] [L-%d] prop_blk[%d] = %.10s, Current block = %.10s", proposer, proposer, get_hex(prop_blk[proposer]->get_hash()).c_str(), get_hex(blk->get_hash()).c_str());
         if (prop_blk[proposer] == blk)
             stop_rotate();
     }
 
     void impeach() override {
+        HOTSTUFF_LOG_DEBUG("Impeach START rotating = %d", rotating);
         if (rotating) return;
+        HOTSTUFF_LOG_DEBUG("Impeach START");
         rotate();
         HOTSTUFF_LOG_INFO("schedule to impeach the proposer");
     }
@@ -389,7 +396,7 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         auto hs = static_cast<hotstuff::HotStuffBase *>(hsc);
         hs->get_tcall().async_call([this, hs](salticidae::ThreadCall::Handle &) {
             auto buffer = hs->get_local_order_buffer();
-            HOTSTUFF_LOG_INFO("[[on_pending_order]] [R-] [L-] pending size = %d", buffer.size());
+            HOTSTUFF_LOG_DEBUG("[[on_pending_order]] [R-] [L-] pending size = %d", buffer.size());
             if (!buffer.size()) return;
             HOTSTUFF_LOG_PROTO("reproposing pending commands");
             
@@ -400,11 +407,13 @@ class PMRoundRobinProposer: virtual public PaceMaker {
                 cmds.push_back(h);
                 buffer.pop();
             }
-                
-            HOTSTUFF_LOG_INFO("[[on_pending_order]] [R-] [L-] pending commands size = %d", cmds.size());
+
+#ifdef HOTSTUFF_ENABLE_LOG_DEBUG                
+            HOTSTUFF_LOG_DEBUG("[[on_pending_order]] [R-] [L-] pending commands size = %d", cmds.size());
             for (auto const &cmd: cmds){
-                HOTSTUFF_LOG_INFO("[[on_pending_order]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
+                HOTSTUFF_LOG_DEBUG("[[on_pending_order]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
             }
+#endif
             hs->on_local_order(proposer, cmds);
         });
     }
@@ -414,7 +423,9 @@ class PMRoundRobinProposer: virtual public PaceMaker {
                         double base_timeout, double prop_delay):
         base_timeout(base_timeout),
         prop_delay(prop_delay),
-        ec(ec), proposer(0), rotating(false) {}
+        ec(ec), proposer(0), rotating(false) {
+            HOTSTUFF_LOG_DEBUG("[[PMRoundRobinProposer]] rotating = %d", rotating);
+        }
 
     size_t get_pending_size() override { return pending_beats.size(); }
 

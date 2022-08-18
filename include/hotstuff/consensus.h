@@ -208,20 +208,20 @@ struct Proposal: public Serializable {
         blk(blk), hsc(hsc) {}
 
     void serialize(DataStream &s) const override {
-        HOTSTUFF_LOG_INFO("[[Proposal Serialize Start]]");
+        HOTSTUFF_LOG_DEBUG("[[Proposal Serialize Start]]");
         s << proposer
           << *blk;
-        HOTSTUFF_LOG_INFO("[[Proposal Serialize Ends]]");
+        HOTSTUFF_LOG_DEBUG("[[Proposal Serialize Ends]]");
     }
 
     void unserialize(DataStream &s) override {
-        HOTSTUFF_LOG_INFO("[[Proposal UnSerialize Start]]");
+        HOTSTUFF_LOG_DEBUG("[[Proposal UnSerialize Start]]");
         assert(hsc != nullptr);
         s >> proposer;
         Block _blk;
         _blk.unserialize(s, hsc);
         blk = hsc->storage->add_blk(std::move(_blk), hsc->get_config());
-        HOTSTUFF_LOG_INFO("[[Proposal UnSerialize Ends]]");
+        HOTSTUFF_LOG_DEBUG("[[Proposal UnSerialize Ends]]");
     }
 
     operator std::string () const {

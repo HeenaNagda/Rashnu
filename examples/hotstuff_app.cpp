@@ -345,7 +345,7 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
     auto cmd = parse_cmd(msg.serialized);
     const auto &cmd_hash = cmd->get_hash();
     HOTSTUFF_LOG_DEBUG("processing %s", std::string(*cmd).c_str());                            
-    HOTSTUFF_LOG_INFO("[[client_request_cmd_handler]] [R-%d] [L-] Received Client Command = %.10s", get_id(), get_hex(cmd_hash).c_str());
+    HOTSTUFF_LOG_DEBUG("[[client_request_cmd_handler]] [R-%d] [L-] Received Client Command = %.10s", get_id(), get_hex(cmd_hash).c_str());
     exec_command(cmd_hash, [this, addr](Finality fin) {
         resp_queue.enqueue(std::make_pair(fin, addr));
     });
@@ -361,8 +361,11 @@ void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytea
     });
     ev_stat_timer.add(stat_period);
     impeach_timer = TimerEvent(ec, [this](TimerEvent &) {
-        if (get_decision_waiting().size())
+        HOTSTUFF_LOG_DEBUG("***Impeach timer invoked with decision_waiting size = %ld", get_decision_waiting().size());
+        if (get_decision_waiting().size()){
+            HOTSTUFF_LOG_DEBUG("[Inside] Impeach timer invoked with decision_waiting size = %ld", get_decision_waiting().size());
             get_pace_maker()->impeach();
+        }
         reset_imp_timer();
     });
     impeach_timer.add(impeach_timeout);

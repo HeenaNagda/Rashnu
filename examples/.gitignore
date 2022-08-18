@@ -1,3 +1,10 @@
 /Makefile
 /hotstuff-app
 /hotstuff-client
+log*
+/scripts/deploy/hotstuff.gen-sec*
+/scripts/deploy/hotstuff.gen.conf
+/scripts/deploy/myrun*/
+/scripts/deploy/nodes.ini
+/scripts/deploy/nodes.txt
+/scripts/deploy/replicas_inter.txt

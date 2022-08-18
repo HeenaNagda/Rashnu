@@ -1,0 +1,87 @@
+2022-08-18 14:46:41.781766 [net info] starting all threads...
+2022-08-18 14:46:41.781992 [net warn] ignoring option name in conf file: block-size
+2022-08-18 14:46:41.782010 [net warn] ignoring option name in conf file: nworker
+2022-08-18 14:46:41.782017 [net warn] ignoring option name in conf file: repnworker
+2022-08-18 14:46:41.782023 [net warn] ignoring option name in conf file: clinworker
+2022-08-18 14:46:41.782029 [net warn] ignoring option name in conf file: repburst
+2022-08-18 14:46:41.782035 [net warn] ignoring option name in conf file: cliburst
+2022-08-18 14:46:41.782041 [net warn] ignoring option name in conf file: pace-maker
+2022-08-18 14:46:41.782058 [net info] loaded configuration from hotstuff.conf
+2022-08-18 14:46:41.782143 [hotstuff info] nfaulty = 1
+2022-08-18 14:46:41.782849 [net info] created <Conn fd=11 addr=<NetAddr 10.10.1.1:20000> mode=active>
+2022-08-18 14:46:41.783620 [net info] created <Conn fd=19 addr=<NetAddr 10.10.1.2:20000> mode=active>
+2022-08-18 14:46:41.783703 [net info] connected to remote <Conn fd=11 addr=<NetAddr 10.10.1.1:20000> mode=active>
+2022-08-18 14:46:41.784290 [net info] created <Conn fd=21 addr=<NetAddr 10.10.1.3:20000> mode=active>
+2022-08-18 14:46:41.784956 [net info] created <Conn fd=23 addr=<NetAddr 10.10.1.4:20000> mode=active>
+2022-08-18 14:46:41.785041 [net info] connected to remote <Conn fd=19 addr=<NetAddr 10.10.1.2:20000> mode=active>
+2022-08-18 14:46:41.785073 [net info] connected to remote <Conn fd=21 addr=<NetAddr 10.10.1.3:20000> mode=active>
+2022-08-18 14:46:41.785289 [net info] connected to remote <Conn fd=23 addr=<NetAddr 10.10.1.4:20000> mode=active>
+2022-08-18 14:46:44.743519 [hotstuff info] 2.958450
+2022-08-18 14:46:44.743571 [hotstuff info] 2.958497
+2022-08-18 14:46:44.743590 [hotstuff info] 2.958512
+2022-08-18 14:46:44.743606 [hotstuff info] 2.958524
+2022-08-18 14:46:56.759960 [hotstuff info] 12.016392
+2022-08-18 14:46:56.760015 [hotstuff info] 12.016429
+2022-08-18 14:46:56.760034 [hotstuff info] 12.016433
+2022-08-18 14:46:56.760048 [hotstuff info] 12.016430
+2022-08-18 14:47:08.772934 [hotstuff info] 12.012921
+2022-08-18 14:47:08.772991 [hotstuff info] 12.012960
+2022-08-18 14:47:08.773009 [hotstuff info] 12.012965
+2022-08-18 14:47:08.773023 [hotstuff info] 12.012964
+2022-08-18 14:47:20.787737 [hotstuff info] 12.014749
+2022-08-18 14:47:20.787790 [hotstuff info] 12.014785
+2022-08-18 14:47:20.787809 [hotstuff info] 12.014790
+2022-08-18 14:47:20.787823 [hotstuff info] 12.014788
+2022-08-18 14:47:32.799795 [hotstuff info] 12.012007
+2022-08-18 14:47:32.799850 [hotstuff info] 12.012045
+2022-08-18 14:47:32.799869 [hotstuff info] 12.012049
+2022-08-18 14:47:32.799883 [hotstuff info] 12.012049
+2022-08-18 14:47:44.812738 [hotstuff info] 12.012890
+2022-08-18 14:47:44.812792 [hotstuff info] 12.012926
+2022-08-18 14:47:44.812810 [hotstuff info] 12.012929
+2022-08-18 14:47:44.812824 [hotstuff info] 12.012930
+2022-08-18 14:47:56.833541 [hotstuff info] 12.020751
+2022-08-18 14:47:56.833584 [hotstuff info] 12.020777
+2022-08-18 14:47:56.833602 [hotstuff info] 12.020782
+2022-08-18 14:47:56.833616 [hotstuff info] 12.020781
+2022-08-18 14:48:08.846095 [hotstuff info] 12.012514
+2022-08-18 14:48:08.846138 [hotstuff info] 12.012540
+2022-08-18 14:48:08.846156 [hotstuff info] 12.012543
+2022-08-18 14:48:08.846171 [hotstuff info] 12.012542
+2022-08-18 14:48:20.859575 [hotstuff info] 12.013439
+2022-08-18 14:48:20.859631 [hotstuff info] 12.013477
+2022-08-18 14:48:20.859649 [hotstuff info] 12.013482
+2022-08-18 14:48:20.859665 [hotstuff info] 12.013483
+2022-08-18 14:48:32.876456 [hotstuff info] 12.016828
+2022-08-18 14:48:32.876509 [hotstuff info] 12.016864
+2022-08-18 14:48:32.876528 [hotstuff info] 12.016866
+2022-08-18 14:48:32.876542 [hotstuff info] 12.016866
+2022-08-18 14:48:44.892406 [hotstuff info] 12.015899
+2022-08-18 14:48:44.892449 [hotstuff info] 12.015924
+2022-08-18 14:48:44.892467 [hotstuff info] 12.015929
+2022-08-18 14:48:44.892481 [hotstuff info] 12.015928
+2022-08-18 14:48:56.905161 [hotstuff info] 12.012715
+2022-08-18 14:48:56.905215 [hotstuff info] 12.012752
+2022-08-18 14:48:56.905234 [hotstuff info] 12.012756
+2022-08-18 14:48:56.905248 [hotstuff info] 12.012755
+2022-08-18 14:49:08.918055 [hotstuff info] 12.012842
+2022-08-18 14:49:08.918109 [hotstuff info] 12.012878
+2022-08-18 14:49:08.918127 [hotstuff info] 12.012883
+2022-08-18 14:49:08.918141 [hotstuff info] 12.012883
+2022-08-18 14:49:20.931572 [hotstuff info] 12.013465
+2022-08-18 14:49:20.931625 [hotstuff info] 12.013501
+2022-08-18 14:49:20.931643 [hotstuff info] 12.013506
+2022-08-18 14:49:20.931657 [hotstuff info] 12.013505
+2022-08-18 14:49:32.948505 [hotstuff info] 12.016884
+2022-08-18 14:49:32.948559 [hotstuff info] 12.016919
+2022-08-18 14:49:32.948577 [hotstuff info] 12.016923
+2022-08-18 14:49:32.948591 [hotstuff info] 12.016923
+2022-08-18 14:49:44.967596 [hotstuff info] 12.019040
+2022-08-18 14:49:44.967648 [hotstuff info] 12.019075
+2022-08-18 14:49:44.967667 [hotstuff info] 12.019080
+2022-08-18 14:49:44.967681 [hotstuff info] 12.019080
+2022-08-18 14:49:56.982516 [hotstuff info] 12.014870
+2022-08-18 14:49:56.982572 [hotstuff info] 12.014909
+2022-08-18 14:49:56.982592 [hotstuff info] 12.014914
+2022-08-18 14:49:56.982607 [hotstuff info] 12.014915
+2022-08-18 14:50:01.083650 [net info] stopping all threads...
