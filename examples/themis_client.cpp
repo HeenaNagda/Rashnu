@@ -169,10 +169,10 @@ void client_resp_cmd_handler(MsgRespCmd &&msg, const Net::conn_t &) {
 #endif
     waiting.erase(it);
 
-    while(missing_send_cnt < TEST_CNT){
-        try_send_missing(missing_send_cnt);
-        missing_send_cnt++;
-    }
+    // while(missing_send_cnt < TEST_CNT){
+    //     try_send_missing(missing_send_cnt);
+    //     missing_send_cnt++;
+    // }
     while (try_send());
 }
 
@@ -233,16 +233,16 @@ int main(int argc, char **argv) {
     nfaulty = (replicas.size() - 1) / 3;
     HOTSTUFF_LOG_INFO("nfaulty = %zu", nfaulty);
     connect_all();
-    // while (try_send());
+    while (try_send());
 
-    init_missing();
+    // init_missing();
     
-    while(missing_send_cnt < TEST_CNT){
-        try_send_missing(missing_send_cnt);
-        missing_send_cnt++;
-    }
+    // while(missing_send_cnt < TEST_CNT){
+    //     try_send_missing(missing_send_cnt);
+    //     missing_send_cnt++;
+    // }
 
-    while(try_send());           
+    // while(try_send());           
     ec.dispatch();
 
 #ifdef HOTSTUFF_ENABLE_BENCHMARK
