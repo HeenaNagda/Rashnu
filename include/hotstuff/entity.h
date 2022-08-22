@@ -315,12 +315,14 @@ class EntityStorage {
     std::unordered_map<const uint256_t, command_t> cmd_cache;
     std::unordered_map<ReplicaID, std::vector<uint256_t>> ordered_hash_cache;                     // Themis
     std::unordered_map<ReplicaID, std::vector<std::pair<uint256_t, uint256_t>>> l_update_cache;   // Themis
-    OrderedList *local_order_seen_cache;                                                           // Themis
+    OrderedList *local_order_seen_execute_level_cache;                                            // Themis
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing_cache;             // Themis
+    OrderedList *local_order_seen_propose_level_cache;                                            // Themis
 
     public:
     EntityStorage() {
-        local_order_seen_cache = new OrderedList();
+        local_order_seen_execute_level_cache = new OrderedList();
+        local_order_seen_propose_level_cache = new OrderedList();
     }
 
     bool is_blk_delivered(const uint256_t &blk_hash) {
@@ -442,14 +444,33 @@ class EntityStorage {
     // Themis
     void update_local_order_seen(std::vector<uint256_t> const &cmds) {
         for(auto const &cmd: cmds){
-            local_order_seen_cache->push_back(cmd);
+            update_local_order_seen(cmd);
         }
+    }
+    // Themis
+    void update_local_order_seen(uint256_t const &cmd) {
+            local_order_seen_execute_level_cache->push_back(cmd);
+            local_order_seen_propose_level_cache->push_back(cmd);
     }
 
     // Themis
-    void remove_local_order_seen(uint256_t cmd) {
-        local_order_seen_cache->remove(cmd);
+    void remove_local_order_seen_execute_level(uint256_t cmd) {
+        local_order_seen_execute_level_cache->remove(cmd);
     }
+    // Themis
+    void remove_local_order_seen_propose_level(uint256_t cmd) {
+        local_order_seen_propose_level_cache->remove(cmd);
+    }
+
+    // Themis
+    std::vector<uint256_t> get_unproposed_cmds() {
+        std::vector<uint256_t> cmds;
+        for(auto it=local_order_seen_propose_level_cache->begin(); it!=local_order_seen_propose_level_cache->end(); it++) {
+            cmds.push_back(*it);
+        }
+        return cmds;
+    }
+
 
     // Themis
     std::vector<std::pair<uint256_t, uint256_t>> get_updated_missing_edges() {
@@ -459,6 +480,7 @@ class EntityStorage {
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
         HOTSTUFF_LOG_DEBUG("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache size = %d", local_order_seen_cache->get_size());
         HOTSTUFF_LOG_DEBUG("[[get_updated_missing_edges]] [R-] [L-] edges_missing_cache size = %d", edges_missing_cache.size());
+
         for(auto const &cache: edges_missing_cache){
             auto const from_v = cache.first;
             for(auto const to_v: cache.second){
@@ -467,11 +489,12 @@ class EntityStorage {
         }
 #endif
 
-        for(auto it_1=local_order_seen_cache->begin(); it_1!=local_order_seen_cache->end(); it_1++) {
+        for(auto it_1=local_order_seen_execute_level_cache->begin(); it_1!=local_order_seen_execute_level_cache->end(); it_1++) {
             auto const from_v = *it_1;
-            for(auto it_2=it_1.next(); it_2!=local_order_seen_cache->end(); it_2++) {
+            for(auto it_2=it_1.next(); it_2!=local_order_seen_execute_level_cache->end(); it_2++) {
                 auto const to_v = *it_2;
                 HOTSTUFF_LOG_DEBUG("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache edge = %.10s -> %.10s", get_hex(from_v).c_str(), get_hex(to_v).c_str());
+
                 if(edges_missing_cache[from_v].count(to_v)>0 || edges_missing_cache[to_v].count(from_v)>0) {
                     edges.push_back(std::make_pair(from_v, to_v));
                 }

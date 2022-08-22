@@ -53,7 +53,6 @@ class PaceMaker {
     virtual void impeach() {}
     virtual void on_consensus(const block_t &) {}
     virtual size_t get_pending_size() = 0;
-    virtual void on_pending_order() {}              // Themis
 };
 
 using pacemaker_bt = BoxObj<PaceMaker>;
@@ -349,30 +348,28 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         locked = false;
         last_proposed = hsc->get_genesis();
         proposer_update_last_proposed();
-        // if (proposer == hsc->get_id())
-        // {
+        if (proposer == hsc->get_id())
+        {
             auto hs = static_cast<hotstuff::HotStuffBase *>(hsc);
             hs->do_elected();
             hs->get_tcall().async_call([this, hs](salticidae::ThreadCall::Handle &) {
-                auto &pending = hs->get_decision_waiting();
-                HOTSTUFF_LOG_DEBUG("[[stop_rotate]] [R-] [L-] pending size = %d", pending.size());
-                if (!pending.size()) return;
-                HOTSTUFF_LOG_PROTO("reproposing pending commands");
-                std::vector<uint256_t> cmds;
-                for (auto &p: pending){
-                    cmds.push_back(p.first);
-                }
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG    
-                HOTSTUFF_LOG_DEBUG("[[stop_rotate]] [R-] [L-] pending commands size = %d", cmds.size());
-                for (auto const &cmd: cmds){
-                    HOTSTUFF_LOG_DEBUG("[[stop_rotate]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
-                }
-#endif
-                hs->on_local_order(proposer, cmds);
+                // auto &pending = hs->get_decision_waiting();
+                // HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending size = %d", pending.size());
+                // if (!pending.size()) return;
+                HOTSTUFF_LOG_PROTO("reproposing pending commands");
+                // std::vector<uint256_t> cmds;
+                // for (auto &p: pending){
+                //     cmds.push_back(p.first);
+                // }
+                    
+                // HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending commands size = %d", cmds.size());
+                // for (auto const &cmd: cmds){
+                //     HOTSTUFF_LOG_INFO("[[stop_rotate]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
+                // }
                 // do_new_consensus(0, cmds);       // TODO: Themis
             });
-        // }
+        }
     }
 
     protected:
@@ -392,31 +389,6 @@ class PMRoundRobinProposer: virtual public PaceMaker {
         HOTSTUFF_LOG_INFO("schedule to impeach the proposer");
     }
 
-    void on_pending_order() override {
-        auto hs = static_cast<hotstuff::HotStuffBase *>(hsc);
-        hs->get_tcall().async_call([this, hs](salticidae::ThreadCall::Handle &) {
-            auto buffer = hs->get_local_order_buffer();
-            HOTSTUFF_LOG_DEBUG("[[on_pending_order]] [R-] [L-] pending size = %d", buffer.size());
-            if (!buffer.size()) return;
-            HOTSTUFF_LOG_PROTO("reproposing pending commands");
-            
-            std::vector<uint256_t> cmds;
-            while (!buffer.empty())
-            {
-                auto const &h = buffer.front();
-                cmds.push_back(h);
-                buffer.pop();
-            }
-
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG                
-            HOTSTUFF_LOG_DEBUG("[[on_pending_order]] [R-] [L-] pending commands size = %d", cmds.size());
-            for (auto const &cmd: cmds){
-                HOTSTUFF_LOG_DEBUG("[[on_pending_order]] [R-] [L-] pending command = %.10s", get_hex(cmd).c_str());
-            }
-#endif
-            hs->on_local_order(proposer, cmds);
-        });
-    }
 
     public:
     PMRoundRobinProposer(const EventContext &ec,

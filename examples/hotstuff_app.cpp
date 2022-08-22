@@ -402,7 +402,6 @@ void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytea
     ev_stat_timer = TimerEvent(ec, [this](TimerEvent &) {
         HotStuff::print_stat();
         HotStuffApp::print_stat();
-        // get_pace_maker()->on_pending_order();       // Themis
         //HotStuffCore::prune(100);
         ev_stat_timer.add(stat_period);
     });
@@ -416,6 +415,7 @@ void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytea
         reset_imp_timer();
     });
     impeach_timer.add(impeach_timeout);
+
     HOTSTUFF_LOG_INFO("** starting the system with parameters **");
     HOTSTUFF_LOG_INFO("blk_size = %lu", blk_size);
     HOTSTUFF_LOG_INFO("conns = %lu", HotStuff::size());

@@ -22,3 +22,4 @@ include/hotstuff/config.h
 /test/test_secp256k1
 /test/test_concurrent_queue
 core
+log*

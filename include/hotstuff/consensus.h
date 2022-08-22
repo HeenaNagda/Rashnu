@@ -111,7 +111,7 @@ class HotStuffCore {
 
     void print_block(std::string calling_method,const hotstuff::Proposal &prop);                       // Themis
     /** Call to submit local order to the current leader **/
-    void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &cmds);       // Themis
+    void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order, bool is_reorder=false);       // Themis
     /** Called when local order is received on Leader from a Replica  **/
     void on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);   // Themis
     /** FairFinalize() **/
@@ -120,6 +120,7 @@ class HotStuffCore {
     /** FairPropose() **/
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> fair_propose();        // Themis
     std::vector<std::pair<uint256_t, uint256_t>> fair_update();                         // Themis
+    void reorder(ReplicaID proposer);                                                                   // Themis
 
     /** Themis thereshold Initialization **/
     double get_solid_tx_threshold();    // Themis
@@ -146,8 +147,6 @@ class HotStuffCore {
     virtual void do_vote(ReplicaID last_proposer, const Vote &vote) = 0;
     /** Called upon sending out local ordering to the next proposer. */
     virtual void do_send_local_order(ReplicaID proposer, const LocalOrder &local_order) = 0;        // Themis
-    /** Remove duplicate transactions from the proposed graph **/
-    virtual void do_remove_duplicates(block_t const &blk) = 0;        // Themis
 
     /* The user plugs in the detailed instances for those
      * polymorphic data types. */

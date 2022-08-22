@@ -1,0 +1,4 @@
+2022-07-25 15:18:53.150022 [net info] loaded configuration from hotstuff.conf
+2022-07-25 15:18:53.150165 [net info] configuration file ./hotstuff-secclear.conf not found
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  ill-formed private key

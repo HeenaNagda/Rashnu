@@ -175,7 +175,8 @@ class HotStuffBase: public HotStuffCore {
     cmd_queue_t cmd_pending;
     std::queue<uint256_t> cmd_pending_buffer;
     std::queue<uint256_t> local_order_buffer;               // Themis
-    std::unordered_set<uint256_t> local_order_buffer_set;   // Themis
+    /** Timer to send unproposed cmds and edges if any **/
+    TimerEvent reorder_timer;                            // Themis
 
     /* statistics */
     uint64_t fetched;
@@ -214,10 +215,10 @@ class HotStuffBase: public HotStuffCore {
     void do_broadcast_proposal(const Proposal &) override;
     void do_vote(ReplicaID, const Vote &) override;
     void do_send_local_order(ReplicaID, const LocalOrder &) override;       // Themis
-    void do_remove_duplicates(block_t const &blk) override;                       // Themis
     void do_decide(Finality &&) override;
     void do_consensus(const block_t &blk) override;
-    void print_block(std::string calling_method, const hotstuff::Proposal &prop);
+    void print_block(std::string calling_method, const hotstuff::Proposal &prop);   // Themis
+    void reset_reorder_timer();                                          // Themis
 
     protected:
 

@@ -66,9 +66,68 @@ std::vector<NetAddr> replicas;
 std::vector<std::pair<struct timeval, double>> elapsed;
 std::unique_ptr<Net> mn;
 
+/** Test **/
+#define TEST_CNT 8
+int cmd_cnt[TEST_CNT];
+int cmd_order[4][TEST_CNT] = {{0,1,2,3,4,5,6,7},{0,1,3,4,2,5,6,7},{0,1,2,4,3,5,6,7},{0,1,3,4,2,5,6,7}};
+int missing_send_cnt=0;
+
 void connect_all() {
     for (size_t i = 0; i < replicas.size(); i++)
         conns.insert(std::make_pair(i, mn->connect_sync(replicas[i])));
+}
+
+void init_missing() {
+    for(int i=0; i<TEST_CNT; i++){
+        cmd_cnt[i] = cnt;
+        cnt++;
+    }
+}
+
+bool try_send_missing(int i, bool check = true) {
+    if ((!check || waiting.size() < max_async_num) && max_iter_num) {
+        for(ReplicaID rid=0; rid<4; rid++){
+            auto cmd = new CommandDummy(cid, cmd_cnt[cmd_order[rid][i]]);
+            MsgReqCmd msg(*cmd);
+            mn->send_msg(msg, conns[rid]);
+#ifndef HOTSTUFF_ENABLE_BENCHMARK
+        HOTSTUFF_LOG_INFO("send new cmd %.10s to Replica-%d",
+                            get_hex(cmd->get_hash()).c_str(), rid);
+#endif
+        waiting.insert(std::make_pair(
+            cmd->get_hash(), Request(cmd)));
+        }
+
+        if (max_iter_num > 0)
+            max_iter_num--;
+
+        return true;
+    }
+    return false;
+}
+
+bool send_missing() {
+    HOTSTUFF_LOG_INFO("send_missing 1");
+    
+    for(int i=0; i<TEST_CNT; i++) {
+        for(ReplicaID rid=0; rid<4; rid++){
+            auto cmd = new CommandDummy(cid, cmd_cnt[cmd_order[rid][i]]);
+            MsgReqCmd msg(*cmd);
+            mn->send_msg(msg, conns[rid]);
+#ifndef HOTSTUFF_ENABLE_BENCHMARK
+        HOTSTUFF_LOG_INFO("send new cmd %.10s",
+                            get_hex(cmd->get_hash()).c_str());
+#endif
+        waiting.insert(std::make_pair(
+            cmd->get_hash(), Request(cmd)));
+        }
+
+        if (max_iter_num > 0)
+            max_iter_num--;
+    }
+    
+    HOTSTUFF_LOG_INFO("send_missing 11");
+    return true;
 }
 
 bool try_send(bool check = true) {
@@ -109,6 +168,11 @@ void client_resp_cmd_handler(MsgRespCmd &&msg, const Net::conn_t &) {
     elapsed.push_back(std::make_pair(tv, et.elapsed_sec));
 #endif
     waiting.erase(it);
+
+    // while(missing_send_cnt < TEST_CNT){
+    //     try_send_missing(missing_send_cnt);
+    //     missing_send_cnt++;
+    // }
     while (try_send());
 }
 
@@ -170,6 +234,15 @@ int main(int argc, char **argv) {
     HOTSTUFF_LOG_INFO("nfaulty = %zu", nfaulty);
     connect_all();
     while (try_send());
+
+    // init_missing();
+    
+    // while(missing_send_cnt < TEST_CNT){
+    //     try_send_missing(missing_send_cnt);
+    //     missing_send_cnt++;
+    // }
+
+    // while(try_send());           
     ec.dispatch();
 
 #ifdef HOTSTUFF_ENABLE_BENCHMARK
