@@ -7,3 +7,6 @@
 [submodule "scripts/deploy/minirun"]
 	path = scripts/deploy/minirun
 	url = https://github.com/Determinant/minirun.git
+[submodule "cpp_random_distributions"]
+	path = cpp_random_distributions
+	url = https://github.com/llersch/cpp_random_distributions.git
