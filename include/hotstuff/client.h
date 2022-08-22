@@ -22,6 +22,8 @@
 #include "hotstuff/entity.h"
 #include "hotstuff/consensus.h"
 
+#define HOTSTUFF_CMD_REQSIZE 50
+
 namespace hotstuff {
 
 struct MsgReqCmd {
@@ -65,7 +67,9 @@ class CommandDummy: public Command {
     uint32_t n;
     uint256_t hash;
 #if HOTSTUFF_CMD_REQSIZE > 0
-    uint8_t payload[HOTSTUFF_CMD_REQSIZE];
+    size_t payload_size;
+    // uint64_t payload[HOTSTUFF_CMD_REQSIZE];
+    uint64_t *payload;
 #endif
 
     public:
@@ -75,24 +79,53 @@ class CommandDummy: public Command {
     CommandDummy(uint32_t cid, uint32_t n):
         cid(cid), n(n), hash(salticidae::get_hash(*this)) {}
 
+    CommandDummy(uint32_t cid, uint32_t n, std::vector<uint64_t> payload):
+        cid(cid), n(n) {
+
+            payload_size = payload.size();
+            this->payload = new uint64_t[payload_size];
+            for(size_t i=0; i<payload_size; i++){
+                this->payload[i] = payload[i];
+            }
+
+            hash = salticidae::get_hash(*this);
+    }
+
     void serialize(DataStream &s) const override {
         s << cid << n;
 #if HOTSTUFF_CMD_REQSIZE > 0
-        s.put_data(payload, payload + sizeof(payload));
+        // s.put_data(payload, payload + sizeof(payload));
+        s << payload_size;
+        for(size_t i=0; i<payload_size; i++){
+            s << this->payload[i];
+        }
 #endif
     }
 
     void unserialize(DataStream &s) override {
         s >> cid >> n;
 #if HOTSTUFF_CMD_REQSIZE > 0
-        auto base = s.get_data_inplace(HOTSTUFF_CMD_REQSIZE);
-        memmove(payload, base, sizeof(payload));
+        // auto base = s.get_data_inplace(HOTSTUFF_CMD_REQSIZE);
+        // memmove(payload, base, sizeof(payload));
+        s >> payload_size;
+        payload = new uint64_t[payload_size];
+        for(size_t i=0; i<payload_size; i++){
+            s >> payload[i];
+        }
 #endif
         hash = salticidae::get_hash(*this);
     }
 
     const uint256_t &get_hash() const override {
         return hash;
+    }
+
+    size_t get_payload_size() {
+        return payload_size;
+    }
+
+    const uint64_t* get_payload(){
+        return payload;
     }
 
     bool verify() const override {

@@ -56,6 +56,7 @@ add_library(hotstuff
     src/hotstuff.cpp
     src/graph.cpp
     src/ordered_list.cpp
+    examples/small_bank.cpp
     )
 
 option(BUILD_SHARED "build shared library." OFF)

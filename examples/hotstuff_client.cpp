@@ -29,6 +29,7 @@
 #include "hotstuff/util.h"
 #include "hotstuff/type.h"
 #include "hotstuff/client.h"
+#include "small_bank.h"
 
 using salticidae::Config;
 
@@ -65,6 +66,7 @@ std::unordered_map<const uint256_t, Request> waiting;
 std::vector<NetAddr> replicas;
 std::vector<std::pair<struct timeval, double>> elapsed;
 std::unique_ptr<Net> mn;
+SmallBankManager *small_bank_manager;
 
 void connect_all() {
     for (size_t i = 0; i < replicas.size(); i++)
@@ -74,12 +76,22 @@ void connect_all() {
 bool try_send(bool check = true) {
     if ((!check || waiting.size() < max_async_num) && max_iter_num)
     {
-        auto cmd = new CommandDummy(cid, cnt++);
+        // auto cmd = new CommandDummy(cid, cnt++);
+        auto next_tx = small_bank_manager->get_next_transaction_serialized();
+        auto cmd = new CommandDummy(cid, cnt++, next_tx);
+
         MsgReqCmd msg(*cmd);
         for (auto &p: conns) mn->send_msg(msg, p.second);
 #ifndef HOTSTUFF_ENABLE_BENCHMARK
-        HOTSTUFF_LOG_INFO("send new cmd %.10s",
-                            get_hex(cmd->get_hash()).c_str());
+
+        std::string data = "";
+        const uint64_t *payload =  cmd->get_payload();
+        for(int i=0; i<cmd->get_payload_size(); i++){
+            data += std::to_string(payload[i]) + " ";
+        }
+        
+        HOTSTUFF_LOG_INFO("send new cmd %.10s with payload (size %ld) %s",
+                            get_hex(cmd->get_hash()).c_str(), cmd->get_payload_size(), data.c_str());
 #endif
         waiting.insert(std::make_pair(
             cmd->get_hash(), Request(cmd)));
@@ -120,6 +132,9 @@ std::pair<std::string, std::string> split_ip_port_cport(const std::string &s) {
 int main(int argc, char **argv) {
     Config config("hotstuff.conf");
 
+    auto opt_sb_users = Config::OptValInt::create(10);
+    auto opt_sb_prob_choose_mtx = Config::OptValDouble::create(0.9);
+    auto opt_sb_skew_factor = Config::OptValDouble::create(0.1);
     auto opt_idx = Config::OptValInt::create(0);
     auto opt_replicas = Config::OptValStrVec::create();
     auto opt_max_iter_num = Config::OptValInt::create(100);
@@ -137,6 +152,9 @@ int main(int argc, char **argv) {
     mn->reg_handler(client_resp_cmd_handler);
     mn->start();
 
+    config.add_opt("sb-users", opt_sb_users, Config::SET_VAL);
+    config.add_opt("sb-prob-choose_mtx", opt_sb_prob_choose_mtx, Config::SET_VAL);
+    config.add_opt("sb-skew-factor", opt_sb_skew_factor, Config::SET_VAL);
     config.add_opt("idx", opt_idx, Config::SET_VAL);
     config.add_opt("cid", opt_cid, Config::SET_VAL);
     config.add_opt("replica", opt_replicas, Config::APPEND);
@@ -168,6 +186,10 @@ int main(int argc, char **argv) {
 
     nfaulty = (replicas.size() - 1) / 3;
     HOTSTUFF_LOG_INFO("nfaulty = %zu", nfaulty);
+
+    HOTSTUFF_LOG_INFO("opt_sb_users = %ld, opt_sb_prob_choose_mtx = %f, opt_sb_skew_factor = %f", opt_sb_users->get(), opt_sb_prob_choose_mtx->get(), opt_sb_skew_factor->get());
+    small_bank_manager = new SmallBankManager(opt_sb_users->get(), opt_sb_prob_choose_mtx->get(), opt_sb_skew_factor->get());
+
     connect_all();
     while (try_send());
     ec.dispatch();

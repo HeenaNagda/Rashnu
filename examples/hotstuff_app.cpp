@@ -36,6 +36,8 @@
 #include "hotstuff/hotstuff.h"
 #include "hotstuff/liveness.h"
 
+#include "small_bank.h"
+
 using salticidae::MsgNetwork;
 using salticidae::ClientNetwork;
 using salticidae::ElapsedTime;
@@ -92,9 +94,18 @@ class HotStuffApp: public HotStuff {
     salticidae::BoxObj<salticidae::ThreadCall> resp_tcall;
     salticidae::BoxObj<salticidae::ThreadCall> req_tcall;
 
+    /* database manager for in-memory database (Small Bank) */
+    SmallBankManager *small_bank_manager;
+
     void client_request_cmd_handler(MsgReqCmd &&, const conn_t &);
 
     static command_t parse_cmd(DataStream &s) {
+        auto cmd = new CommandDummy();
+        s >> *cmd;
+        return cmd;
+    }
+
+    static CommandDummy* parse_cmd_with_payload(DataStream &s) {
         auto cmd = new CommandDummy();
         s >> *cmd;
         return cmd;
@@ -118,7 +129,10 @@ class HotStuffApp: public HotStuff {
 #endif
 
     public:
-    HotStuffApp(double fairness_parameter,      // Themis
+    HotStuffApp(uint64_t sb_n_users,
+                double sb_prob_choose_mtx,
+                double sb_skew_factor,
+                double fairness_parameter,      // Themis
                 uint32_t blk_size,
                 double stat_period,
                 double impeach_timeout,
@@ -151,6 +165,9 @@ int main(int argc, char **argv) {
     ElapsedTime elapsed;
     elapsed.start();
 
+    auto opt_sb_users = Config::OptValInt::create(10);
+    auto opt_sb_prob_choose_mtx = Config::OptValDouble::create(0.9);
+    auto opt_sb_skew_factor = Config::OptValDouble::create(0.1);
     auto opt_fairness_parameter = Config::OptValDouble::create(1);  // Themis
     auto opt_blk_size = Config::OptValInt::create(1);
     auto opt_parent_limit = Config::OptValInt::create(-1);
@@ -176,6 +193,9 @@ int main(int argc, char **argv) {
     auto opt_max_rep_msg = Config::OptValInt::create(4 << 20); // 4M by default
     auto opt_max_cli_msg = Config::OptValInt::create(65536); // 64K by default
 
+    config.add_opt("sb-users", opt_sb_users, Config::SET_VAL);
+    config.add_opt("sb-prob-choose_mtx", opt_sb_prob_choose_mtx, Config::SET_VAL);
+    config.add_opt("sb-skew-factor", opt_sb_skew_factor, Config::SET_VAL);
     config.add_opt("fairness-parameter", opt_fairness_parameter, Config::SET_VAL);  // Themis
     config.add_opt("block-size", opt_blk_size, Config::SET_VAL);
     config.add_opt("parent-limit", opt_parent_limit, Config::SET_VAL);
@@ -265,7 +285,10 @@ int main(int argc, char **argv) {
     clinet_config
         .burst_size(opt_cliburst->get())
         .nworker(opt_clinworker->get());
-    papp = new HotStuffApp(opt_fairness_parameter->get(),   // Themis
+    papp = new HotStuffApp(opt_sb_users->get(),
+                        opt_sb_prob_choose_mtx->get(),
+                        opt_sb_skew_factor->get(),
+                        opt_fairness_parameter->get(),   // Themis
                         opt_blk_size->get(),
                         opt_stat_period->get(),
                         opt_imp_timeout->get(),
@@ -298,7 +321,10 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-HotStuffApp::HotStuffApp(double fairness_parameter,  // Themis
+HotStuffApp::HotStuffApp(uint64_t sb_n_users,
+                        double sb_prob_choose_mtx,
+                        double sb_skew_factor,
+                        double fairness_parameter,  // Themis
                         uint32_t blk_size,
                         double stat_period,
                         double impeach_timeout,
@@ -318,6 +344,10 @@ HotStuffApp::HotStuffApp(double fairness_parameter,  // Themis
     ec(ec),
     cn(req_ec, clinet_config),
     clisten_addr(clisten_addr) {
+
+    // small bank manager object
+    small_bank_manager = new SmallBankManager(sb_n_users, sb_prob_choose_mtx, sb_skew_factor);
+
     /* prepare the thread used for sending back confirmations */
     resp_tcall = new salticidae::ThreadCall(resp_ec);
     req_tcall = new salticidae::ThreadCall(req_ec);
@@ -342,11 +372,28 @@ HotStuffApp::HotStuffApp(double fairness_parameter,  // Themis
 
 void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn) {
     const NetAddr addr = conn->get_addr();
-    auto cmd = parse_cmd(msg.serialized);
-    const auto &cmd_hash = cmd->get_hash();
-    HOTSTUFF_LOG_DEBUG("processing %s", std::string(*cmd).c_str());                            
-    HOTSTUFF_LOG_DEBUG("[[client_request_cmd_handler]] [R-%d] [L-] Received Client Command = %.10s", get_id(), get_hex(cmd_hash).c_str());
-    exec_command(cmd_hash, [this, addr](Finality fin) {
+    auto cmd = parse_cmd_with_payload(msg.serialized);
+    const auto &cmd_hash = cmd->get_hash(); 
+
+    std::string data = "";
+    for(int i=0; i<cmd->get_payload_size(); i++){
+        data += std::to_string(cmd->get_payload()[i]) + " ";
+    }
+    HOTSTUFF_LOG_INFO("[[client_request_cmd_handler]] Payload Received [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());                          
+    HOTSTUFF_LOG_DEBUG("processing %s", std::string(*cmd).c_str()); 
+
+    exec_command(cmd_hash, [this, addr, cmd](Finality fin) {
+
+         /* Execute the transaction before sending response to the client */
+        small_bank_manager->execute_transaction(cmd->get_payload());
+
+
+        std::string data = "";
+        for(int i=0; i<cmd->get_payload_size(); i++){
+            data += std::to_string(cmd->get_payload()[i]) + " ";
+        }
+        HOTSTUFF_LOG_INFO("[[Callback]] Payload Executed [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());
+
         resp_queue.enqueue(std::make_pair(fin, addr));
     });
 }
