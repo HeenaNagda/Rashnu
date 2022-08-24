@@ -20,6 +20,9 @@ if __name__ == "__main__":
     parser.add_argument('--clinworker', type=int, default=4)
     parser.add_argument('--repburst', type=int, default=1000)
     parser.add_argument('--cliburst', type=int, default=1000)
+    parser.add_argument('--sb-users', type=int, default=20)
+    parser.add_argument('--sb-prob-choose_mtx', type=float, default=0.9)
+    parser.add_argument('--sb-skew-factor', type=float, default=0.1)
     args = parser.parse_args()
 
 
@@ -60,6 +63,12 @@ if __name__ == "__main__":
         main_conf.write("repburst = {}\n".format(args.repburst))
     if args.cliburst is not None:
         main_conf.write("cliburst = {}\n".format(args.cliburst))
+    if args.sb_users is not None:
+        main_conf.write("sb-users = {}\n".format(args.sb_users))
+    if args.sb_prob_choose_mtx is not None:
+        main_conf.write("sb-prob-choose_mtx = {}\n".format(args.sb_prob_choose_mtx))
+    if args.sb_skew_factor is not None:
+        main_conf.write("sb-skew-factor = {}\n".format(args.sb_skew_factor))
     if not (args.pace_maker is None):
         main_conf.write("pace-maker = {}\n".format(args.pace_maker))
     for r in zip(replicas, keys, tls_keys, itertools.count(0)):

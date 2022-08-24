@@ -109,7 +109,7 @@ void HotStuffCore::update(const block_t &nblk) {
     /* Update proposal level local order cache */
     for(auto const &g: nblk->get_graph()) {
         storage->remove_local_order_seen_propose_level(g.first);
-        HOTSTUFF_LOG_INFO("[[update]] [R-%d] [L-] Removing Proposed cmd from seen = %.10s", get_id(), get_hex(g.first).c_str());
+        HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Removing Proposed cmd from seen = %.10s", get_id(), get_hex(g.first).c_str());
     }
 
     /* nblk = b*, blk2 = b'', blk1 = b', blk = b */
@@ -452,7 +452,7 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
 
     if(cmds.size()==0 && l_update.size()==0){
         /* Nothing to send to Leader */
-        HOTSTUFF_LOG_INFO("[[on_local_order]] [R-%d] [L-%d] Nothing to order", get_id(), proposer);
+        HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] [L-%d] Nothing to order", get_id(), proposer);
         return;
     }
 
@@ -691,7 +691,7 @@ void HotStuffCore::reorder(ReplicaID proposer) {
     // TODO: Themis
     /** Get unordered cmds ??? **/
 
-    HOTSTUFF_LOG_INFO("[[reorder]] [R-%d] invoked", get_id());
+    HOTSTUFF_LOG_DEBUG("[[reorder]] [R-%d] invoked", get_id());
     /** Create Local Order **/
     on_local_order(proposer, std::vector<uint256_t>(), true);  
 }
