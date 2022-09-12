@@ -206,9 +206,10 @@ class HotStuffBase: public HotStuffCore {
     inline void req_blk_handler(MsgReqBlock &&, const Net::conn_t &);
     /** receives a block */
     inline void resp_blk_handler(MsgRespBlock &&, const Net::conn_t &);
-    // Themis
     /** receives local ordering on leader from replica **/
-    inline void local_order_handler(MsgLocalOrder &&, const Net::conn_t &);
+    inline void local_order_handler(MsgLocalOrder &&, const Net::conn_t &);     // Themis
+     /** Called upon receiving local order from replicas to the Leader. */
+    inline void process_local_order(const LocalOrder &);                        // Themis
 
     inline bool conn_handler(const salticidae::ConnPool::conn_t &, bool);
 

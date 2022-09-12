@@ -464,11 +464,12 @@ class EntityStorage {
 
     // Themis
     std::vector<uint256_t> get_unproposed_cmds() {
-        std::vector<uint256_t> cmds;
-        for(auto it=local_order_seen_propose_level_cache->begin(); it!=local_order_seen_propose_level_cache->end(); it++) {
-            cmds.push_back(*it);
-        }
-        return cmds;
+        // std::vector<uint256_t> cmds;
+        // for(auto it=local_order_seen_propose_level_cache->begin(); it!=local_order_seen_propose_level_cache->end(); it++) {
+        //     cmds.push_back(*it);
+        // }
+        // return cmds;
+        return local_order_seen_propose_level_cache->get_cmds();
     }
 
 
@@ -477,8 +478,8 @@ class EntityStorage {
         std::vector<std::pair<uint256_t, uint256_t>> edges;
 
         
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
-        HOTSTUFF_LOG_DEBUG("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache size = %d", local_order_seen_cache->get_size());
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
         HOTSTUFF_LOG_DEBUG("[[get_updated_missing_edges]] [R-] [L-] edges_missing_cache size = %d", edges_missing_cache.size());
 
         for(auto const &cache: edges_missing_cache){
@@ -493,14 +494,14 @@ class EntityStorage {
             auto const from_v = *it_1;
             for(auto it_2=it_1.next(); it_2!=local_order_seen_execute_level_cache->end(); it_2++) {
                 auto const to_v = *it_2;
-                HOTSTUFF_LOG_DEBUG("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache edge = %.10s -> %.10s", get_hex(from_v).c_str(), get_hex(to_v).c_str());
-
+                HOTSTUFF_LOG_INFO("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache edge = %.10s -> %.10s", get_hex(from_v).c_str(), get_hex(to_v).c_str());
                 if(edges_missing_cache[from_v].count(to_v)>0 || edges_missing_cache[to_v].count(from_v)>0) {
                     edges.push_back(std::make_pair(from_v, to_v));
                 }
             }
         }
         return edges;
+        // return local_order_seen_execute_level_cache->get_curr_missing_edges(edges_missing_cache);
     }
 
     // Themis

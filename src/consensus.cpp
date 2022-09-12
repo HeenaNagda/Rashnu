@@ -100,46 +100,46 @@ void HotStuffCore::update(const block_t &nblk) {
     /* Update missing edge cache */
     for(auto const &edge: nblk->get_e_update()) {
         storage->remove_missing_edge(edge.first, edge.second);
-        HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Removing missing edge = %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
+        // HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Removing missing edge = %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
     }
     for(auto const &edge: nblk->get_missing_edges()) {
         storage->add_missing_edge(edge.first, edge.second);
-        HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Adding missing edge = %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
+        // HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Adding missing edge = %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
     }
     /* Update proposal level local order cache */
     for(auto const &g: nblk->get_graph()) {
         storage->remove_local_order_seen_propose_level(g.first);
-        HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Removing Proposed cmd from seen = %.10s", get_id(), get_hex(g.first).c_str());
+        // HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Removing Proposed cmd from seen = %.10s", get_id(), get_hex(g.first).c_str());
     }
 
     /* nblk = b*, blk2 = b'', blk1 = b', blk = b */
-    HOTSTUFF_LOG_DEBUG("[[update Start]] [R-%d] [L-] new block = %.10s", get_id(),get_hex(nblk->get_hash()).c_str());
+    // HOTSTUFF_LOG_DEBUG("[[update Start]] [R-%d] [L-] new block = %.10s", get_id(),get_hex(nblk->get_hash()).c_str());
 #ifndef HOTSTUFF_TWO_STEP
     /* three-step HotStuff */
     const block_t &blk2 = nblk->qc_ref;
     if (blk2 == nullptr) return;
-    HOTSTUFF_LOG_DEBUG("[[update 1]]");
+    // HOTSTUFF_LOG_DEBUG("[[update 1]] blk2 = %.10s, decision = %d, b0 = %.10s, decision = %d", get_hex(blk2->get_hash()).c_str(), blk2->decision, get_hex(b0->get_hash()).c_str(), b0->decision);
     /* decided blk could possible be incomplete due to pruning */
     if (blk2->decision) return;
-    HOTSTUFF_LOG_DEBUG("[[update 2]]");
+    // HOTSTUFF_LOG_DEBUG("[[update 2]]");
     update_hqc(blk2, nblk->qc);
 
     const block_t &blk1 = blk2->qc_ref;
     if (blk1 == nullptr) return;
-    HOTSTUFF_LOG_DEBUG("[[update 3]]");
+    // HOTSTUFF_LOG_DEBUG("[[update 3]]");
     if (blk1->decision) return;
-    HOTSTUFF_LOG_DEBUG("[[update 4]]");
+    // HOTSTUFF_LOG_DEBUG("[[update 4]]");
     if (blk1->height > b_lock->height) b_lock = blk1;
 
     const block_t &blk = blk1->qc_ref;
     if (blk == nullptr) return;
-    HOTSTUFF_LOG_DEBUG("[[update 5]]");
+    // HOTSTUFF_LOG_DEBUG("[[update 5]]");
     if (blk->decision) return;
-    HOTSTUFF_LOG_DEBUG("[[update 6]]");
+    // HOTSTUFF_LOG_DEBUG("[[update 6]]");
 
     /* commit requires direct parent */
     if (blk2->parents[0] != blk1 || blk1->parents[0] != blk) return;
-    HOTSTUFF_LOG_DEBUG("[[update 7]]");
+    // HOTSTUFF_LOG_DEBUG("[[update 7]]");
 #else
     /* two-step HotStuff */
     const block_t &blk1 = nblk->qc_ref;
@@ -161,8 +161,7 @@ void HotStuffCore::update(const block_t &nblk) {
     block_t b;
 
 
-
-    print_all_blocks(nblk, blk);
+print_all_blocks(nblk, blk);
 
 
     for (b = blk; b->height > b_exec->height; b = b->parents[0])
@@ -174,18 +173,18 @@ void HotStuffCore::update(const block_t &nblk) {
                                 std::string(*blk) + " " +
                                 std::string(*b_exec));
 
-    HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Commit queue Size = %d", get_id(), commit_queue.size());
+    // HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Commit queue Size = %d", get_id(), commit_queue.size());
     for (auto it = commit_queue.rbegin(); it != commit_queue.rend(); it++)
     {
         const block_t &blk = *it;
 
         // Themis
-        HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Graph Size = %d, block = %.10s", get_id(), blk->get_graph().size(), get_hex(blk->get_hash()).c_str());
+        // HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Graph Size = %d, block = %.10s", get_id(), blk->get_graph().size(), get_hex(blk->get_hash()).c_str());
         auto const &order = fair_finalize(blk, nblk->get_e_update());
-        HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Final Order Size = %d", get_id(), order.size());
+        // HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Final Order Size = %d", get_id(), order.size());
         if(order.empty() && !blk->get_graph().empty()) {
             /* this is not a tournament graph: stop looking at further blocks */
-            HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Not a tournament Graph", get_id());
+            // HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Not a tournament Graph", get_id());
             break;
         }
 
@@ -200,7 +199,7 @@ void HotStuffCore::update(const block_t &nblk) {
         }
         b_exec = blk;
 
-        HOTSTUFF_LOG_DEBUG("[[update Decided]] [R-%d] [L-]", get_id());
+        // HOTSTUFF_LOG_DEBUG("[[update Decided]] [R-%d] [L-]", get_id());
 
         // blk->decision = 1;
         // do_consensus(blk);
@@ -210,7 +209,7 @@ void HotStuffCore::update(const block_t &nblk) {
         //                         blk->cmds[i], blk->get_hash()));
     }
     // b_exec = blk;                        
-    HOTSTUFF_LOG_DEBUG("[[update Ends]] [R-%d] [L-]", get_id());
+    // HOTSTUFF_LOG_DEBUG("[[update Ends]] [R-%d] [L-]", get_id());
 }
 
 // Themis
@@ -218,25 +217,25 @@ void HotStuffCore::print_all_blocks(const block_t &nblk, const block_t &blk){
     std::queue<block_t> parents_queue;
     parents_queue.push(nblk);
 
-    HOTSTUFF_LOG_DEBUG("[[print_all_blocks Start]] [R-%d] [L-] : Below:", get_id());
+    // HOTSTUFF_LOG_INFO("[[print_all_blocks Start]] [R-%d] [L-] : Below:", get_id());
     while(!parents_queue.empty()){
         auto const &b = parents_queue.front();
         parents_queue.pop();
 
         for (auto const &pp_block: b->parents){
-            HOTSTUFF_LOG_DEBUG("[[print_all_blocks]] [R-%d] [L-] hash = %.10s(%d) => %.10s(%d)", get_id(), get_hex(pp_block->get_hash()).c_str(), pp_block->get_height(), get_hex(b->get_hash()).c_str(), b->get_height());
+            HOTSTUFF_LOG_INFO("[[print_all_blocks]] [R-%d] [L-] hash = %.10s(%d) => %.10s(%d)", get_id(), get_hex(pp_block->get_hash()).c_str(), pp_block->get_height(), get_hex(b->get_hash()).c_str(), b->get_height());
             parents_queue.push(pp_block);
         }
         
     }
-    HOTSTUFF_LOG_DEBUG("[[print_all_blocks Ends]] [R-%d] [L-]", get_id());
+    // HOTSTUFF_LOG_INFO("[[print_all_blocks Ends]] [R-%d] [L-]", get_id());
 
-    HOTSTUFF_LOG_DEBUG("[[print_all_blocks]] [R-%d] [L-] new block = %.10s(%d), start block = %.10s(%d), b0 = %.10s(%d), b_exec = %.10s(%d)", 
-                        get_id(), 
-                        get_hex(nblk->get_hash()).c_str(), nblk->get_height(),
-                        get_hex(blk->get_hash()).c_str(), blk->get_height(),
-                        get_hex(b0->get_hash()).c_str(), b0->get_height(),
-                        get_hex(b_exec->get_hash()).c_str(), b_exec->get_height());
+    // HOTSTUFF_LOG_INFO("[[print_all_blocks]] [R-%d] [L-] new block = %.10s(%d), start block = %.10s(%d), b0 = %.10s(%d), b_exec = %.10s(%d)", 
+    //                     get_id(), 
+    //                     get_hex(nblk->get_hash()).c_str(), nblk->get_height(),
+    //                     get_hex(blk->get_hash()).c_str(), blk->get_height(),
+    //                     get_hex(b0->get_hash()).c_str(), b0->get_height(),
+    //                     get_hex(b_exec->get_hash()).c_str(), b_exec->get_height());
 }
 
 // Themis
@@ -279,7 +278,7 @@ std::vector<uint256_t> HotStuffCore::
 
 block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/               // Themis
                             const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph,
-                            std::vector<std::pair<uint256_t, uint256_t>> &e_update,
+                            const std::vector<std::pair<uint256_t, uint256_t>> &e_update,
                             const std::vector<block_t> &parents,
                             bytearray_t &&extra) {
     if (parents.empty())
@@ -294,7 +293,8 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
             nullptr
         ));
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     if(bnew->get_qc_ref()==nullptr){
         HOTSTUFF_LOG_DEBUG("[[on_propose]] [R-%d] [L-]  block hqc = %.10s, Decision = %d", get_id(), "null", bnew->get_decision());
     }
@@ -316,8 +316,10 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
     on_propose_(prop);
     /* boradcast to other replicas */
 
+#ifdef NOTDEFINE
     print_block("on_propose", prop);
-    
+#endif
+
     do_broadcast_proposal(prop);
     return bnew;
 }
@@ -325,9 +327,9 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
 void HotStuffCore::print_block(std::string calling_method, const hotstuff::Proposal &prop){
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
     for ( auto const &g: prop.blk->get_graph()) {
-        HOTSTUFF_LOG_DEBUG("[[%s]] [R-%d] [L-%d] key = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(g.first).c_str());
+        // HOTSTUFF_LOG_DEBUG("[[%s]] [R-%d] [L-%d] key = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(g.first).c_str());
         for (auto const &tx: g.second){
-            HOTSTUFF_LOG_DEBUG("[[%s]] [R-%d] [L-%d] val = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(tx).c_str());
+            // HOTSTUFF_LOG_DEBUG("[[%s]] [R-%d] [L-%d] val = %s", calling_method.c_str(), get_id(), prop.proposer, get_hex(tx).c_str());
         }
     }
 #endif
@@ -347,9 +349,10 @@ void HotStuffCore::on_receive_proposal(const Proposal &prop) {
     LOG_PROTO("got %s", std::string(prop).c_str());
     bool self_prop = prop.proposer == get_id();
     block_t bnew = prop.blk;
-    HOTSTUFF_LOG_DEBUG("[[on_receive_proposal]] [R-%d] [L-%d] broadcasted block Received = %.10s", get_id(), prop.proposer, get_hex(bnew->get_hash()).c_str());
+    // HOTSTUFF_LOG_DEBUG("[[on_receive_proposal]] [R-%d] [L-%d] broadcasted block Received = %.10s", get_id(), prop.proposer, get_hex(bnew->get_hash()).c_str());
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     auto const &graph = bnew->get_graph();
     for ( auto const &g: graph) {
         HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Start]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
@@ -362,9 +365,9 @@ void HotStuffCore::on_receive_proposal(const Proposal &prop) {
     if (!self_prop)
     {
         sanity_check_delivered(bnew);
-        HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Before Update]] [R-%d] [L-%d]", get_id(), prop.proposer);
+        // HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Before Update]] [R-%d] [L-%d]", get_id(), prop.proposer);
         update(bnew);
-        HOTSTUFF_LOG_DEBUG("[[on_receive_proposal After Update]] [R-%d] [L-%d]", get_id(), prop.proposer);
+        // HOTSTUFF_LOG_DEBUG("[[on_receive_proposal After Update]] [R-%d] [L-%d]", get_id(), prop.proposer);
     }
     bool opinion = false;
     if (bnew->height > vheight)
@@ -392,7 +395,7 @@ void HotStuffCore::on_receive_proposal(const Proposal &prop) {
         on_qc_finish(bnew->qc_ref);
     on_receive_proposal_(prop);
     if (opinion && !vote_disabled){
-        HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Start Vote]] [R-%d] [L-%d]", get_id(), prop.proposer);
+        // HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Start Vote]] [R-%d] [L-%d]", get_id(), prop.proposer);
         do_vote(prop.proposer,
             Vote(id, bnew->get_hash(),
                 create_part_cert(*priv_key, bnew->get_hash()), this));
@@ -429,6 +432,7 @@ void HotStuffCore::on_receive_vote(const Vote &vote) {
 
 // Themis
 void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order, bool is_reorder) {
+    // HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] [L-%d] START", get_id(), proposer);
     /** Add seen but Unproposed commands to the local order **/
     auto cmds = order;
 
@@ -443,7 +447,8 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
     /** identify previously missing and seen edges and update l_update **/
     auto const l_update = storage->get_updated_missing_edges();
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] [L-%d] l_update sent = ", get_id(), proposer);
     for(auto const &edge: l_update){
         HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] [L-%d] %.10s -> %.10s", get_id(), proposer, get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
@@ -452,7 +457,7 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
 
     if(cmds.size()==0 && l_update.size()==0){
         /* Nothing to send to Leader */
-        HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] [L-%d] Nothing to order", get_id(), proposer);
+        // HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] [L-%d] Nothing to order", get_id(), proposer);
         return;
     }
 
@@ -461,7 +466,8 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
     LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
     /** send local order to leader **/
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     for ( auto const &cmd: local_order.ordered_hashes){
         HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] [L-%d] LocalOrder Created = %.10s", get_id(), proposer, get_hex(cmd).c_str());
     }
@@ -470,26 +476,18 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
 }
 
 // Themis
-void HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents) {
+bool HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents) {
     LOG_PROTO("got %s", std::string(local_order).c_str());
     LOG_PROTO("now state: %s", std::string(*this).c_str());
-
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+    
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     int i=0;
     for(auto const &h : local_order.ordered_hashes){
         HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder on Leader (hash number: %d)= %.10s", local_order.initiator, get_id(), i, get_hex(h).c_str());
         i++;
     }
-#endif
-    
-
-
-    // TODO: if this is not a leader then ignore the request/ message 
-
-    // /** wait for majority of replicas **/
-    // size_t qsize = storage->get_local_order_cache_size();
-    // if(qsize >= config.nmajority) { return; }
-    
+#endif    
     /** add new local order to the storage **/
     storage->add_local_order(local_order.initiator, local_order.ordered_hashes, local_order.l_update);
 
@@ -497,32 +495,23 @@ void HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
     size_t qsize = storage->get_local_order_cache_size();
     if(qsize >= config.nmajority){
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
         for(auto const &replica: storage->get_local_order_replia_vector()){
             for(auto const &h: storage->get_ordered_hash_vector(replica)){
                 HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Global Order started for (%d) = %.10s", local_order.initiator, get_id(), replica, get_hex(h).c_str());
             }
         }
 #endif
-        
-
-
-        /* FairPropose() */
-        std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph = fair_propose();
-        /* FairUpdate() */
-        std::vector<std::pair<uint256_t, uint256_t>> e_update = fair_update();
-        // std::vector<std::pair<uint256_t, uint256_t>> e_update;
-        storage->clear_local_order();
-        HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Cleared Local Order", local_order.initiator, get_id());
-        /** Create a new proposal block and broadcast to the replicas **/
-        on_propose(graph, e_update, parents);
-
+        return true;
     }
+    // HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] No majority Found", local_order.initiator, get_id());
+    return false;
 }
 
 // Themis
 std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_propose() {
-    HOTSTUFF_LOG_DEBUG("[[fairPropose START]] [R-%d]", get_id());
+    // HOTSTUFF_LOG_DEBUG("[[fairPropose START]] [R-%d]", get_id());
     /** (1) get those replicas from which Leader has received their local order **/
     std::vector<ReplicaID> replicas = storage->get_local_order_replia_vector();
 
@@ -580,7 +569,8 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_
     CondensationGraph utility_obj = CondensationGraph(graph);
     std::vector<std::vector<uint256_t>> topo_sorted_cond_graph = utility_obj.get_condensation_graph();
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     for (auto const &scc: topo_sorted_cond_graph){
         HOTSTUFF_LOG_DEBUG("[[fairPropose SCC start]] [R-%d]", get_id());
         for(auto const &tx: scc){
@@ -619,7 +609,8 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_
 
     /** (8) Output G **/
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     for ( auto const &g: graph) {
         HOTSTUFF_LOG_DEBUG("[[fairPropose END]] [R-%d] key = %.10s", get_id(), get_hex(g.first).c_str());
         for (auto const &tx: g.second){
@@ -633,7 +624,7 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_
 
 // Themis
 std::vector<std::pair<uint256_t, uint256_t>> HotStuffCore::fair_update(){
-     HOTSTUFF_LOG_DEBUG("[[fair_update START]] [R-%d]", get_id());
+    //  HOTSTUFF_LOG_DEBUG("[[fair_update START]] [R-%d]", get_id());
     /** (1) get those replicas from which Leader has received their local order **/
     std::vector<ReplicaID> replicas = storage->get_local_order_replia_vector();
 
@@ -647,10 +638,10 @@ std::vector<std::pair<uint256_t, uint256_t>> HotStuffCore::fair_update(){
     /* Find edge count */
     
     for(auto const &replica: replicas){
-        HOTSTUFF_LOG_DEBUG("[[fair_update]] [R-%d] [L-] l_update Received from replica (%d)= ", get_id(), replica);
+        // HOTSTUFF_LOG_DEBUG("[[fair_update]] [R-%d] [L-] l_update Received from replica (%d)= ", get_id(), replica);
         for (auto const &edge: storage->get_l_update_vector(replica)) {
             edge_count[edge.first][edge.second]++;
-            HOTSTUFF_LOG_DEBUG("[[fair_update]] [R-%d] [L-] %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
+            // HOTSTUFF_LOG_DEBUG("[[fair_update]] [R-%d] [L-] %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
         }
     }
     /* add edges where k>=n(1-gama)+f+1 {>= tx_edge_threshold} */
@@ -676,14 +667,15 @@ std::vector<std::pair<uint256_t, uint256_t>> HotStuffCore::fair_update(){
         }
     }
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     HOTSTUFF_LOG_DEBUG("[[fair_update]] [R-%d] [L-] e_update derived = ", get_id());
     for(auto const &edge: e_update){
         HOTSTUFF_LOG_DEBUG("[[fair_update]] [R-%d] [L-] %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
     }
 #endif
     
-    HOTSTUFF_LOG_DEBUG("[[fair_update ENDS]] [R-%d]", get_id());
+    // HOTSTUFF_LOG_DEBUG("[[fair_update ENDS]] [R-%d]", get_id());
     return e_update;
 }
 
@@ -691,7 +683,7 @@ void HotStuffCore::reorder(ReplicaID proposer) {
     // TODO: Themis
     /** Get unordered cmds ??? **/
 
-    HOTSTUFF_LOG_DEBUG("[[reorder]] [R-%d] invoked", get_id());
+    // HOTSTUFF_LOG_DEBUG("[[reorder]] [R-%d] invoked", get_id());
     /** Create Local Order **/
     on_local_order(proposer, std::vector<uint256_t>(), true);  
 }

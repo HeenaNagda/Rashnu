@@ -106,4 +106,29 @@ namespace hotstuff {
     size_t OrderedList::get_size(){
         return linked_cache.size();
     }
+
+    std::vector<uint256_t> OrderedList::get_cmds(){
+        std::vector<uint256_t> cmds;
+        LinkedNode* curr = head->next;
+        while(curr!=tail){
+            cmds.push_back(curr->cmd_hash);
+        }
+        return cmds;
+    }
+
+    std::vector<std::pair<uint256_t,uint256_t>> OrderedList::get_curr_missing_edges(std::unordered_map<uint256_t, std::unordered_set<uint256_t>>& missing){
+        std::vector<std::pair<uint256_t,uint256_t>> curr_missing;
+        for(LinkedNode* ptr1 = head->next; ptr1!=tail; ptr1 = ptr1->next){
+            auto from_v = ptr1->cmd_hash;
+            // HOTSTUFF_LOG_INFO("[[get_curr_missing_edges]] from_v = %.10s", from_v);
+            for(LinkedNode* ptr2 = ptr1->next; ptr2!=tail; ptr2 = ptr2->next){
+                auto to_v = ptr2->cmd_hash;
+                // HOTSTUFF_LOG_INFO("[[get_curr_missing_edges]] to_v = %.10s", from_v);
+                if(missing[from_v].count(to_v)>0 || missing[to_v].count(from_v)>0) {
+                    curr_missing.push_back(std::make_pair(from_v, to_v));
+                }
+            }
+        }
+        return curr_missing;
+    }
 }

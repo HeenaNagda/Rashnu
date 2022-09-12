@@ -21,7 +21,9 @@
 #define _THEMIS_ORDERED_LIST_H
 
 #include <unordered_map>
+#include <unordered_set>
 #include "salticidae/stream.h"
+#include "hotstuff/util.h"
 
 namespace hotstuff {
 
@@ -65,6 +67,9 @@ class OrderedList{
     Iterator begin() const;
     Iterator end() const;
     size_t get_size();
+
+    std::vector<uint256_t> get_cmds();
+    std::vector<std::pair<uint256_t,uint256_t>> get_curr_missing_edges(std::unordered_map<uint256_t, std::unordered_set<uint256_t>>& missing);
 };
 
 }

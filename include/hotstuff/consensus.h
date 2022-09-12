@@ -105,7 +105,7 @@ class HotStuffCore {
      * while the others are uncles/aunts */
     block_t on_propose(/* const std::vector<uint256_t> &cmds,*/                 // Themis
                     const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph,
-                    std::vector<std::pair<uint256_t, uint256_t>> &e_update,
+                    const std::vector<std::pair<uint256_t, uint256_t>> &e_update,
                     const std::vector<block_t> &parents,
                     bytearray_t &&extra = bytearray_t());
 
@@ -113,7 +113,7 @@ class HotStuffCore {
     /** Call to submit local order to the current leader **/
     void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order, bool is_reorder=false);       // Themis
     /** Called when local order is received on Leader from a Replica  **/
-    void on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);   // Themis
+    bool on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);   // Themis
     /** FairFinalize() **/
     void print_all_blocks(const block_t &nblk, const block_t &blk);     // Themis
     std::vector<uint256_t> fair_finalize(block_t const &blk, std::vector<std::pair<uint256_t, uint256_t>> const &e_update);       // Themis
@@ -207,20 +207,20 @@ struct Proposal: public Serializable {
         blk(blk), hsc(hsc) {}
 
     void serialize(DataStream &s) const override {
-        HOTSTUFF_LOG_DEBUG("[[Proposal Serialize Start]]");
+        // HOTSTUFF_LOG_DEBUG("[[Proposal Serialize Start]]");
         s << proposer
           << *blk;
-        HOTSTUFF_LOG_DEBUG("[[Proposal Serialize Ends]]");
+        // HOTSTUFF_LOG_DEBUG("[[Proposal Serialize Ends]]");
     }
 
     void unserialize(DataStream &s) override {
-        HOTSTUFF_LOG_DEBUG("[[Proposal UnSerialize Start]]");
+        // HOTSTUFF_LOG_DEBUG("[[Proposal UnSerialize Start]]");
         assert(hsc != nullptr);
         s >> proposer;
         Block _blk;
         _blk.unserialize(s, hsc);
         blk = hsc->storage->add_blk(std::move(_blk), hsc->get_config());
-        HOTSTUFF_LOG_DEBUG("[[Proposal UnSerialize Ends]]");
+        // HOTSTUFF_LOG_DEBUG("[[Proposal UnSerialize Ends]]");
     }
 
     operator std::string () const {
