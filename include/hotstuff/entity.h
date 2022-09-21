@@ -23,6 +23,7 @@
 #include <string>
 #include <cstddef>
 #include <ios>
+#include <queue>
 
 #include "salticidae/netaddr.h"
 #include "salticidae/ref.h"
@@ -313,8 +314,8 @@ struct BlockHeightCmp {
 class EntityStorage {
     std::unordered_map<const uint256_t, block_t> blk_cache;
     std::unordered_map<const uint256_t, command_t> cmd_cache;
-    std::unordered_map<ReplicaID, std::vector<uint256_t>> ordered_hash_cache;                     // Themis
-    std::unordered_map<ReplicaID, std::vector<std::pair<uint256_t, uint256_t>>> l_update_cache;   // Themis
+    std::unordered_map<ReplicaID, std::queue<std::vector<uint256_t>>> ordered_hash_cache;                     // Themis
+    std::unordered_map<ReplicaID, std::queue<std::vector<std::pair<uint256_t, uint256_t>>>> l_update_cache;   // Themis
     OrderedList *local_order_seen_execute_level_cache;                                            // Themis
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing_cache;             // Themis
     OrderedList *local_order_seen_propose_level_cache;                                            // Themis
@@ -407,14 +408,29 @@ class EntityStorage {
     void add_local_order(ReplicaID rid, const std::vector<uint256_t> ordered_hash, 
                             const std::vector<std::pair<uint256_t, uint256_t>> l_update){
         /* Overwriting old values if exists */
-        ordered_hash_cache[rid] = ordered_hash;
-        l_update_cache[rid] = l_update;
+        ordered_hash_cache[rid].push(ordered_hash);
+        l_update_cache[rid].push(l_update);
     }
 
     // Themis
-    void clear_local_order(){
-        ordered_hash_cache.clear();
-        l_update_cache.clear();
+    // void clear_local_order(){
+    //     ordered_hash_cache.clear();
+    //     l_update_cache.clear();
+    // }
+
+    // Themis
+    void clear_front_ordered_hash(ReplicaID replica) {
+        ordered_hash_cache[replica].pop();
+        if(ordered_hash_cache[replica].empty()){
+            ordered_hash_cache.erase(replica);
+        }
+    }
+    // Themis
+    void clear_front_l_update(ReplicaID replica) {
+        l_update_cache[replica].pop();
+        if(l_update_cache[replica].empty()){
+            l_update_cache.erase(replica);
+        }
     }
 
     // Themis
@@ -423,7 +439,7 @@ class EntityStorage {
     }
 
     // Themis
-    std::vector<ReplicaID> get_local_order_replia_vector(){
+    std::vector<ReplicaID> get_ordered_hash_replia_vector(){
         std::vector<ReplicaID> replicas;
         for(auto const& order: ordered_hash_cache){
             replicas.push_back(order.first);
@@ -432,13 +448,22 @@ class EntityStorage {
     }
 
     // Themis
+    std::vector<ReplicaID> get_l_update_replia_vector(){
+        std::vector<ReplicaID> replicas;
+        for(auto const& order: l_update_cache){
+            replicas.push_back(order.first);
+        }
+        return replicas;
+    }
+
+    // Themis
     std::vector<uint256_t> get_ordered_hash_vector(ReplicaID replica) {
-        return ordered_hash_cache[replica];
+        return ordered_hash_cache[replica].front();
     }
 
     // Themis
     std::vector<std::pair<uint256_t, uint256_t>> get_l_update_vector(ReplicaID replica) {
-        return l_update_cache[replica];
+        return l_update_cache[replica].front();
     }
 
     // Themis
@@ -475,8 +500,6 @@ class EntityStorage {
 
     // Themis
     std::vector<std::pair<uint256_t, uint256_t>> get_updated_missing_edges() {
-        std::vector<std::pair<uint256_t, uint256_t>> edges;
-
         
 // #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 #ifdef NOTDEFINE
@@ -490,18 +513,20 @@ class EntityStorage {
         }
 #endif
 
-        for(auto it_1=local_order_seen_execute_level_cache->begin(); it_1!=local_order_seen_execute_level_cache->end(); it_1++) {
-            auto const from_v = *it_1;
-            for(auto it_2=it_1.next(); it_2!=local_order_seen_execute_level_cache->end(); it_2++) {
-                auto const to_v = *it_2;
-                HOTSTUFF_LOG_INFO("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache edge = %.10s -> %.10s", get_hex(from_v).c_str(), get_hex(to_v).c_str());
-                if(edges_missing_cache[from_v].count(to_v)>0 || edges_missing_cache[to_v].count(from_v)>0) {
-                    edges.push_back(std::make_pair(from_v, to_v));
-                }
-            }
-        }
-        return edges;
-        // return local_order_seen_execute_level_cache->get_curr_missing_edges(edges_missing_cache);
+        // std::vector<std::pair<uint256_t, uint256_t>> edges;
+        // for(auto it_1=local_order_seen_execute_level_cache->begin(); it_1!=local_order_seen_execute_level_cache->end(); it_1++) {
+        //     auto const from_v = *it_1;
+        //     for(auto it_2=it_1.next(); it_2!=local_order_seen_execute_level_cache->end(); it_2++) {
+        //         auto const to_v = *it_2;
+        //         HOTSTUFF_LOG_INFO("[[get_updated_missing_edges]] [R-] [L-] local_order_seen_cache edge = %.10s -> %.10s", get_hex(from_v).c_str(), get_hex(to_v).c_str());
+        //         if(edges_missing_cache[from_v].count(to_v)>0 || edges_missing_cache[to_v].count(from_v)>0) {
+        //             HOTSTUFF_LOG_INFO("[[get_updated_missing_edges]] current missing = (%.10s, %.10s)", from_v, to_v);
+        //             edges.push_back(std::make_pair(from_v, to_v));
+        //         }
+        //     }
+        // }
+        // return edges;
+        return local_order_seen_execute_level_cache->get_curr_missing_edges(edges_missing_cache);
     }
 
     // Themis

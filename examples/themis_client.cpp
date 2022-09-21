@@ -30,8 +30,6 @@
 #include "hotstuff/type.h"
 #include "hotstuff/client.h"
 
-#define HOTSTUFF_ENABLE_BENCHMARK
-
 using salticidae::Config;
 
 using hotstuff::ReplicaID;

@@ -379,7 +379,7 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
     for(int i=0; i<cmd->get_payload_size(); i++){
         data += std::to_string(cmd->get_payload()[i]) + " ";
     }
-    // HOTSTUFF_LOG_DEBUG("[[client_request_cmd_handler]] Payload Received [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());                          
+    HOTSTUFF_LOG_DEBUG("[[client_request_cmd_handler]] Payload Received [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());                          
     HOTSTUFF_LOG_DEBUG("processing %s", std::string(*cmd).c_str()); 
 
     exec_command(cmd_hash, [this, addr, cmd](Finality fin) {
@@ -392,7 +392,7 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
         for(int i=0; i<cmd->get_payload_size(); i++){
             data += std::to_string(cmd->get_payload()[i]) + " ";
         }
-        // HOTSTUFF_LOG_DEBUG("[[Callback]] Payload Executed [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());
+        HOTSTUFF_LOG_DEBUG("[[Callback]] Payload Executed [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());
 
         resp_queue.enqueue(std::make_pair(fin, addr));
     });
@@ -407,9 +407,9 @@ void HotStuffApp::start(const std::vector<std::tuple<NetAddr, bytearray_t, bytea
     });
     ev_stat_timer.add(stat_period);
     impeach_timer = TimerEvent(ec, [this](TimerEvent &) {
-        // HOTSTUFF_LOG_DEBUG("***Impeach timer invoked with decision_waiting size = %ld", get_decision_waiting().size());
+        HOTSTUFF_LOG_DEBUG("***Impeach timer invoked with decision_waiting size = %ld", get_decision_waiting().size());
         if (get_decision_waiting().size()){
-            // HOTSTUFF_LOG_DEBUG("[Inside] Impeach timer invoked with decision_waiting size = %ld", get_decision_waiting().size());
+            HOTSTUFF_LOG_DEBUG("[Inside] Impeach timer invoked with decision_waiting size = %ld", get_decision_waiting().size());
             get_pace_maker()->impeach();
         }
         reset_imp_timer();

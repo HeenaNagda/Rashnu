@@ -37,7 +37,7 @@ class Logger: public salticidae::Logger {
 extern Logger logger;
 
 #define HOTSTUFF_ENABLE_BENCHMARK
-// #define HOTSTUFF_DEBUG_LOG
+// #define HOTSTUFF_ENABLE_LOG_DEBUG
 
 #ifdef HOTSTUFF_PROTO_LOG
 #define HOTSTUFF_ENABLE_LOG_PROTO
