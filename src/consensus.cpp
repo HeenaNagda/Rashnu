@@ -196,6 +196,7 @@ void HotStuffCore::update(const block_t &nblk) {
         for (size_t i=0; i<n; i++) {
             do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
             storage->remove_local_order_seen_execute_level(order[i]);
+            storage->remove_from_proposed_cmds_cache(order[i]);
         }
         b_exec = blk;
 
@@ -284,6 +285,16 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
     if (parents.empty())
         throw std::runtime_error("empty parents");
     for (const auto &_: parents) tails.erase(_);
+
+    // /* Remove cmds from local order storage that are going to be proposed */
+    // for(auto g: graph){
+    //     storage->clear_ordered_hash_on_propose(g.first);
+    // }
+    /* Store proposed commands */
+    for(auto g: graph){
+        storage->add_to_proposed_cmds_cache(g.first);
+    }
+
     /* create the new block */
     block_t bnew = storage->add_blk(
         new Block(parents, /*cmds,*/ graph, e_update,

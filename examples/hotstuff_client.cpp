@@ -104,7 +104,7 @@ bool try_send(bool check = true) {
 
 void client_resp_cmd_handler(MsgRespCmd &&msg, const Net::conn_t &) {
     auto &fin = msg.fin;
-    HOTSTUFF_LOG_INFO("got %s", std::string(msg.fin).c_str());
+    HOTSTUFF_LOG_DEBUG("got %s", std::string(msg.fin).c_str());
     const uint256_t &cmd_hash = fin.cmd_hash;
     auto it = waiting.find(cmd_hash);
     auto &et = it->second.et;
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
         replicas.push_back(NetAddr(NetAddr(_p.first).ip, htons(stoi(_p.second, &_))));
     }
 
-    nfaulty = (replicas.size() - 1) / 3;
+    nfaulty = (replicas.size() - 1) / 4;
     HOTSTUFF_LOG_INFO("nfaulty = %zu", nfaulty);
 
     HOTSTUFF_LOG_INFO("opt_sb_users = %ld, opt_sb_prob_choose_mtx = %f, opt_sb_skew_factor = %f", opt_sb_users->get(), opt_sb_prob_choose_mtx->get(), opt_sb_skew_factor->get());

@@ -319,6 +319,7 @@ class EntityStorage {
     OrderedList *local_order_seen_execute_level_cache;                                            // Themis
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing_cache;             // Themis
     OrderedList *local_order_seen_propose_level_cache;                                            // Themis
+    std::unordered_set<uint256_t> proposed_cmds_cache;                                            // Themis 
 
     public:
     EntityStorage() {
@@ -408,7 +409,16 @@ class EntityStorage {
     void add_local_order(ReplicaID rid, const std::vector<uint256_t> ordered_hash, 
                             const std::vector<std::pair<uint256_t, uint256_t>> l_update){
         /* Overwriting old values if exists */
-        ordered_hash_cache[rid].push(ordered_hash);
+        std::vector<uint256_t> unproposed_hashes;
+        for(auto cmd: ordered_hash){
+            if(!is_cmd_proposed(cmd)){
+                unproposed_hashes.push_back(cmd);
+            }
+        }
+        if(!unproposed_hashes.empty()){
+            ordered_hash_cache[rid].push(unproposed_hashes);
+        }
+        // ordered_hash_cache[rid].push(ordered_hash);
         l_update_cache[rid].push(l_update);
     }
 
@@ -430,6 +440,36 @@ class EntityStorage {
         l_update_cache[replica].pop();
         if(l_update_cache[replica].empty()){
             l_update_cache.erase(replica);
+        }
+    }
+
+    // Themis
+    void clear_ordered_hash_if_propose(){
+        for(auto &cache: ordered_hash_cache){
+            std::queue<std::vector<uint256_t>> *q = &cache.second;
+            auto q_size = q->size();
+            for(size_t qi=0; qi<q_size; qi++){
+                auto order_size = q->front().size();
+                HOTSTUFF_LOG_INFO("[[clear_ordered_hash_if_propose]] Order size before = %ld", q->front().size());
+                for(size_t i=0; i<order_size; i++){
+                    if(is_cmd_proposed(q->front()[i])){
+                        auto cmd = q->front()[i];
+                        /* this cmd is already proposed */
+                        q->front().erase(q->front().begin() + i);
+                        HOTSTUFF_LOG_INFO("[[clear_ordered_hash_if_propose]] cleared cmd = %.10s", get_hex(cmd).c_str());
+                        break;
+                    }
+                }
+                auto order = q->front();
+                HOTSTUFF_LOG_INFO("[[clear_ordered_hash_if_propose]] Order size after = %ld", q->front().size());
+                q->pop();
+                if(order.size()>0){
+                    q->push(order);
+                }
+                else{
+                    HOTSTUFF_LOG_INFO("[[clear_ordered_hash_if_propose]] order is completely removed from replica = %d", cache.first);
+                }
+            }
         }
     }
 
@@ -545,7 +585,22 @@ class EntityStorage {
         if(edges_missing_cache[v2].count(v1)>0){
             edges_missing_cache[v2].erase(v1);
         }
-    }             
+    }   
+
+    // Themis Dummy
+    void add_to_proposed_cmds_cache(uint256_t cmd){
+        proposed_cmds_cache.insert(cmd);
+    }   
+
+    // Themis Dummy
+    void remove_from_proposed_cmds_cache(uint256_t cmd){
+        proposed_cmds_cache.erase(cmd);
+    }  
+
+    // Themis Dummy
+    bool is_cmd_proposed(uint256_t cmd){
+        return proposed_cmds_cache.count(cmd)>0;
+    }     
 
 };
 
