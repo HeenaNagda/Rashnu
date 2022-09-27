@@ -304,6 +304,10 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
             nullptr
         ));
 
+// DataStream s1;
+// bnew->serialize(s1);
+// HOTSTUFF_LOG_WARN("[[on-propose]] Proposal size = %ld", s1.size());
+
 // #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 #ifdef NOTDEFINE
     if(bnew->get_qc_ref()==nullptr){

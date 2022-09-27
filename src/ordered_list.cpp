@@ -120,13 +120,13 @@ namespace hotstuff {
         std::vector<std::pair<uint256_t,uint256_t>> curr_missing;
         for(LinkedNode* ptr1 = head->next; ptr1!=tail; ptr1 = ptr1->next){
             auto from_v = ptr1->cmd_hash;
-            HOTSTUFF_LOG_DEBUG("[[get_curr_missing_edges]] from_v = %.10s", from_v.to_hex());
+            // HOTSTUFF_LOG_DEBUG("[[get_curr_missing_edges]] from_v = %.10s", from_v.to_hex());
             for(LinkedNode* ptr2 = ptr1->next; ptr2!=tail; ptr2 = ptr2->next){
                 auto to_v = ptr2->cmd_hash;
-                HOTSTUFF_LOG_DEBUG("[[get_curr_missing_edges]] to_v = %.10s", from_v.to_hex());
+                // HOTSTUFF_LOG_DEBUG("[[get_curr_missing_edges]] to_v = %.10s", from_v.to_hex());
                 if(missing[from_v].count(to_v)>0 || missing[to_v].count(from_v)>0) {
                     curr_missing.push_back(std::make_pair(from_v, to_v));
-                    HOTSTUFF_LOG_DEBUG("[[get_curr_missing_edges]] current missing = (%.10s, %.10s)", from_v.to_hex(), to_v.to_hex());
+                    // HOTSTUFF_LOG_DEBUG("[[get_curr_missing_edges]] current missing = (%.10s, %.10s)", from_v, to_v.to_hex());
                 }
             }
         }

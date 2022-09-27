@@ -513,7 +513,7 @@ void HotStuffBase::do_decide(Finality &&fin) {
 // Themis
 void HotStuffBase::reset_reorder_timer() {
     reorder_timer.del();
-    reorder_timer.add(5);
+    // reorder_timer.add(5);
 }
 
 
@@ -614,12 +614,12 @@ void HotStuffBase::start(
         return false;
     });
 
-    /** Initialize and start unproposed Timer **/ 
-    reorder_timer = TimerEvent(ec, [this](TimerEvent &) {
-        reorder(pmaker->get_proposer());
-        reset_reorder_timer();
-    });
-    reorder_timer.add(5);
+    // /** Initialize and start unproposed Timer **/ 
+    // reorder_timer = TimerEvent(ec, [this](TimerEvent &) {
+    //     reorder(pmaker->get_proposer());
+    //     reset_reorder_timer();
+    // });
+    // reorder_timer.add(5);
 }
 
 }
