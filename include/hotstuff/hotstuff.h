@@ -242,7 +242,7 @@ class HotStuffBase: public HotStuffCore {
     /* the API for HotStuffBase */
 
     /* Submit the command to be decided. */
-    void exec_command(uint256_t cmd_hash, commit_cb_t callback);
+    void exec_command(uint256_t cmd_hash, std::unordered_map<uint64_t, char> dependency, commit_cb_t callback);
     void start(std::vector<std::tuple<NetAddr, pubkey_bt, uint256_t>> &&replicas,
                 double fairness_parameter,      // Themis
                 bool ec_loop = false);

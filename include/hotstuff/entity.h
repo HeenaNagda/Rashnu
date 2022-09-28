@@ -321,7 +321,8 @@ class EntityStorage {
     OrderedList *local_order_seen_execute_level_cache;                                            // Themis
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing_cache;             // Themis
     OrderedList *local_order_seen_propose_level_cache;                                            // Themis
-    std::unordered_set<uint256_t> proposed_cmds_cache;                                            // Themis 
+    std::unordered_set<uint256_t> proposed_cmds_cache; 
+	std::unordered_map<const uint256_t, std::unordered_map<uint64_t, char>> dependency_cache;     // Rashnu                                           // Themis 
 
     public:
     EntityStorage() {
@@ -602,7 +603,27 @@ class EntityStorage {
     // Themis Dummy
     bool is_cmd_proposed(uint256_t cmd){
         return proposed_cmds_cache.count(cmd)>0;
-    }     
+    }  
+	
+	// Rashnu
+    void update_dependency_cache(uint256_t cmd_hash, std::unordered_map<uint64_t, char> dependency){
+        dependency_cache[cmd_hash] = dependency;
+    }  
+
+    // Rashnu
+    std::unordered_map<uint64_t, char> get_cmd_dependency(uint256_t cmd_hash){
+        if(dependency_cache.count(cmd_hash)>0){
+            return dependency_cache[cmd_hash];
+        }
+        return std::unordered_map<uint64_t, char>();
+    }      
+
+    // Rashnu
+    void erase_cmd_dependency(uint256_t cmd_hash){
+         if(dependency_cache.count(cmd_hash)>0){
+            dependency_cache.erase(cmd_hash);
+        }
+    }    
 
 };
 

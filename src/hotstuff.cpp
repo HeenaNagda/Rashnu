@@ -86,7 +86,8 @@ void MsgLocalOrder::postponed_parse(HotStuffCore *hsc) {
 
 
 // TODO: improve this function
-void HotStuffBase::exec_command(uint256_t cmd_hash, commit_cb_t callback) {
+void HotStuffBase::exec_command(uint256_t cmd_hash, std::unordered_map<uint64_t, char> dependency, commit_cb_t callback) {
+    storage->update_dependency_cache(cmd_hash, dependency);
     cmd_pending.enqueue(std::make_pair(cmd_hash, callback));
 }
 
@@ -507,6 +508,7 @@ void HotStuffBase::do_decide(Finality &&fin) {
         HOTSTUFF_LOG_DEBUG("[[do_decide Execute]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
         it->second(std::move(fin));
         decision_waiting.erase(it);
+        storage->erase_cmd_dependency(fin.cmd_hash);
     }
 }
 

@@ -413,6 +413,104 @@ std::pair<uint64_t, uint64_t> SmallBankManager::execute_transaction(const uint64
     return accounts;
 }
 
+std::unordered_map<uint64_t, char> SmallBankManager::get_users_detail(const uint64_t* tx_payload){
+    std::unordered_map<uint64_t, char> users_detail;
+    size_t idx = 0;
+    idx++;
+
+    switch (tx_payload[0])
+    {
+        case 0:{
+            /** void transaction_savings(uint64_t user_id, uint64_t amount) **/
+            /** payload format : [tx type, user id, amount] **/
+            
+            auto user_id = tx_payload[idx++];
+            users_detail[user_id] = 'w';
+            break;
+        }
+            
+        
+        case 1:{
+            /** void deposit_checking(uint64_t user_id, uint64_t amount) **/
+            /** payload format : [tx type, user id, amount] **/
+
+            auto user_id = tx_payload[idx++];
+            users_detail[user_id] = 'w';
+            break;
+        }
+            
+        
+        case 2:{
+            /** void write_check(uint64_t user_id, uint64_t amount) **/
+            /** payload format : [tx type, user id, amount] **/
+
+            auto user_id = tx_payload[idx++];
+            users_detail[user_id] = 'w';
+            break;
+        }
+            
+        
+        case 3:{
+            /** void send_payment(uint64_t from_user_id, uint64_t to_user_id, uint64_t amount) **/
+            /** payload format : [tx type, from user id, to user id, amount] **/
+
+            auto from_user_id = tx_payload[idx++];
+            auto to_user_id = tx_payload[idx++];
+            users_detail[from_user_id] = 'r';
+            users_detail[to_user_id] = 'w';
+            break; 
+        }
+            
+
+        case 4:{
+            /** void transaction_split(std::vector<std::pair<uint64_t, uint64_t>> payors, std::vector<uint64_t> party) **/
+            /** payload format : [tx type, count of payors, payer_1 id, payer_1 amount, ..., party size, member_1, member_1, ...] **/
+
+            auto n_payors = tx_payload[idx++];
+
+            for(int i=0; i<n_payors; i++){
+                auto payor_id = tx_payload[idx++];
+                auto payor_amount = tx_payload[idx++];
+                users_detail[payor_id] = 'w';
+            }
+            
+            auto party_size = tx_payload[idx++];
+
+            for(int i=0; i<party_size; i++){
+                auto user_id = tx_payload[idx++];
+                users_detail[user_id] = 'w';
+            }
+
+            break;
+        }
+            
+
+        case 5:{
+            /** void amalgamate(uint64_t user_id) **/
+            /** payload format : [tx type, user id] **/
+
+            auto user_id = tx_payload[idx++];
+            users_detail[user_id] = 'w';
+            break;
+        }
+            
+
+        case 6:{
+            /** std::pair<uint64_t,uint64_t> query(uint64_t user_id) **/
+            /** payload format : [tx type, user id] **/
+
+            auto user_id = tx_payload[idx++];
+            users_detail[user_id] = 'r';
+            break;
+        }  
+        
+        default:
+            fprintf(stderr, "Wrong transaction type received at the time of finding dependents");
+            break;
+    }
+    return users_detail;
+}
+
 std::pair<uint64_t,uint64_t> SmallBankManager::show_account_info(uint64_t user_id){
     return bank->query(user_id);
 }

@@ -7,6 +7,7 @@
 #include <limits>
 #include <iostream>
 #include <random>
+#include <unordered_set>
 
 #include "salticidae/util.h"
 #include "cpp_random_distributions/zipfian_int_distribution.h"
@@ -67,6 +68,7 @@ public:
     SmallBankManager(uint64_t n_users, double prob_choose_mtx, double skew_factor);
     std::vector<uint64_t> get_next_transaction_serialized();
     std::pair<uint64_t, uint64_t> execute_transaction(const uint64_t* tx_payload);
+    std::unordered_map<uint64_t, char> get_users_detail(const uint64_t* tx_payload);
 
     // /* Just for testing they are public */
     // std::vector<uint64_t> get_next_transaction_by_type(uint64_t tx_type);
