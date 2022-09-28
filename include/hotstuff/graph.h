@@ -43,6 +43,40 @@ class CondensationGraph {
     std::unordered_set<uint256_t> get_decendents_from_transposed_graph(uint256_t tx);
 };
 
+class LocalOrderDAG {
+    std::vector<uint256_t> order;
+    // Map<cmd_hash, Pair(dependency set, Map<dependency,dependency type>)>
+    std::unordered_map<uint256_t, std::unordered_set<uint64_t>> dependencies;
+    std::unordered_map<uint256_t, std::unordered_map<uint64_t, char>> dependency_types;
+
+    public:
+    LocalOrderDAG(const std::vector<uint256_t> &order);
+    void add_dependency(uint256_t cmd_hash, std::unordered_map<uint64_t, char> dependency_info);
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> create_dag();
+};
+
+class TransitiveReduction {
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> reduced_graph;
+    void reduce_by_dfs(uint256_t u, uint256_t intermediate_node, std::unordered_set<uint256_t>& visited);
+
+    public:
+    TransitiveReduction(std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph);
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> reduce();
+};
+
+class WeaklyConnectedGraph{
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> undirected_graph;
+    std::unordered_set<uint256_t> visited;
+
+    void create_undirected_graph();
+    void dfs(uint256_t node, std::vector<uint256_t>& component);
+
+    public:
+    WeaklyConnectedGraph(std::unordered_map<uint256_t, std::unordered_set<uint256_t>>& graph);
+    std::vector<std::vector<uint256_t>> get_wcc();
+};
+
 }
 #endif
 
