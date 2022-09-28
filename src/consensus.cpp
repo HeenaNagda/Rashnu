@@ -476,7 +476,13 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
         return;
     }
 
-    // std::vector<std::pair<uint256_t, uint256_t>> l_update;
+    /** Creating Local order DAG **/
+    LocalOrderDAG *local_order_dag = new LocalOrderDAG(cmds);
+    for(auto cmd_hash: cmds){
+        local_order_dag->add_dependency(cmd_hash, storage->get_cmd_dependency(cmd_hash));
+    }
+    auto dag = local_order_dag->create_dag();
+    
     /** create LocalOrder struct Object **/
     LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
     /** send local order to leader **/

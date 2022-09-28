@@ -22,6 +22,7 @@
 
 #include <unordered_map>
 #include "hotstuff/entity.h"
+#include "salticidae/ref.h"
 
 namespace hotstuff {
 
@@ -75,6 +76,14 @@ class WeaklyConnectedGraph{
     public:
     WeaklyConnectedGraph(std::unordered_map<uint256_t, std::unordered_set<uint256_t>>& graph);
     std::vector<std::vector<uint256_t>> get_wcc();
+};
+
+class GraphFormatConversion{
+    public:
+    GraphFormatConversion();
+    void serialize(DataStream &s, const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph);
+    void unserialize(DataStream &s, std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph);
+
 };
 
 }

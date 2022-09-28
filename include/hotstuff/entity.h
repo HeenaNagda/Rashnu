@@ -31,6 +31,7 @@
 #include "hotstuff/util.h"
 #include "hotstuff/crypto.h"
 #include "hotstuff/ordered_list.h"
+#include "hotstuff/graph.h"
 
 namespace hotstuff {
 
