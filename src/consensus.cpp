@@ -224,7 +224,7 @@ void HotStuffCore::print_all_blocks(const block_t &nblk, const block_t &blk){
         parents_queue.pop();
 
         for (auto const &pp_block: b->parents){
-            HOTSTUFF_LOG_INFO("[[print_all_blocks]] [R-%d] [L-] hash = %.10s(%d) => %.10s(%d)", get_id(), get_hex(pp_block->get_hash()).c_str(), pp_block->get_height(), get_hex(b->get_hash()).c_str(), b->get_height());
+            HOTSTUFF_LOG_DEBUG("[[print_all_blocks]] [R-%d] [L-] hash = %.10s(%d) => %.10s(%d)", get_id(), get_hex(pp_block->get_hash()).c_str(), pp_block->get_height(), get_hex(b->get_hash()).c_str(), b->get_height());
             parents_queue.push(pp_block);
         }
         
@@ -482,16 +482,20 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
         local_order_dag->add_dependency(cmd_hash, storage->get_cmd_dependency(cmd_hash));
     }
     auto dag = local_order_dag->create_dag();
-    
     /** create LocalOrder struct Object **/
-    LocalOrder local_order = LocalOrder(get_id(), cmds, l_update, this);
+    LocalOrder local_order = LocalOrder(get_id(), dag, l_update, this);
     /** send local order to leader **/
 
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
-    for ( auto const &cmd: local_order.ordered_hashes){
-        HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] [L-%d] LocalOrder Created = %.10s", get_id(), proposer, get_hex(cmd).c_str());
+    HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] Creating Receive LocalOrder DAG", get_id());
+    for(auto const &g: local_order.ordered_dag){
+        HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
+        for(auto const val: g.second){
+            HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
+        }
     }
+    HOTSTUFF_LOG_DEBUG("============================");
 #endif
     do_send_local_order(proposer, local_order);
 }
@@ -503,14 +507,17 @@ bool HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
     
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
-    int i=0;
-    for(auto const &h : local_order.ordered_hashes){
-        HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder on Leader (hash number: %d)= %.10s", local_order.initiator, get_id(), i, get_hex(h).c_str());
-        i++;
+    HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder DAG on Leade", local_order.initiator, get_id());
+    for(auto const &g: local_order.ordered_dag){
+        HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
+        for(auto const val: g.second){
+            HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
+        }
     }
+    HOTSTUFF_LOG_DEBUG("============================");
 #endif    
     /** add new local order to the storage **/
-    storage->add_local_order(local_order.initiator, local_order.ordered_hashes, local_order.l_update);
+    storage->add_local_order(local_order.initiator, local_order.ordered_dag, local_order.l_update);
 
     /** Trigger FairPropose() and FairUpdate() **/
     size_t qsize = storage->get_local_order_cache_size();
@@ -518,11 +525,16 @@ bool HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
 
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
-        for(auto const &replica: storage->get_ordered_hash_replia_vector()){
-            for(auto const &h: storage->get_ordered_hash_vector(replica)){
-                HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Global Order started for (%d) = %.10s", local_order.initiator, get_id(), replica, get_hex(h).c_str());
+       for(auto const &replica: storage->get_local_order_replia_vector()){
+            HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Global Order started", local_order.initiator, get_id());
+            for(auto const &g: storage->get_ordered_hash_dag(replica)){
+                HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
+                for(auto const val: g.second){
+                    HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
+                }
             }
-        }
+            HOTSTUFF_LOG_DEBUG("============================");
+       }
 #endif
         return true;
     }
@@ -531,10 +543,10 @@ bool HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
 }
 
 // Themis
-std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_propose() {
+std::pair<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>, std::vector<std::pair<uint256_t, uint256_t>>> HotStuffCore::fair_propose() {
     HOTSTUFF_LOG_DEBUG("[[fairPropose START]] [R-%d]", get_id());
     /** (1) get those replicas from which Leader has received their local order **/
-    std::vector<ReplicaID> replicas = storage->get_ordered_hash_replia_vector();
+    std::vector<ReplicaID> replicas = storage->get_ordered_dag_replia_vector();
 
     /** (2) Create an empty graph G = (V,E) **/
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;
@@ -543,8 +555,9 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_
     std::unordered_map<uint256_t, uint16_t> tx_count;
     /* find transaction count */
     for(ReplicaID replica: replicas){
-        for(uint256_t tx_hash: storage->get_ordered_hash_vector(replica)){
-            tx_count[tx_hash]++;
+        auto dag = storage->get_ordered_dag(replica);
+        for(auto const& g: dag){
+            tx_count[g.first]++;
         }
     }
     /* find non blank transactions and add them to the graph */
@@ -561,29 +574,36 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_
         }
     }
 
-    /** (4) Add edges to E **/
+    /** (4) Add edges to E and find missing edges **/
     std::unordered_map<uint256_t, std::unordered_map<uint256_t, uint16_t>> edge_count;
     /* Find edge count */
     for(ReplicaID replica: replicas){
-        std::vector<uint256_t> ordered_hash = storage->get_ordered_hash_vector(replica);
-        size_t len = ordered_hash.size();
-        for(size_t from=0; from<len; from++) {
-            for(size_t to=from+1; to<len; to++){
-                edge_count[ordered_hash[from]][ordered_hash[to]]++;
+        auto dag = storage->get_ordered_dag(replica);
+        for(auto const& g: dag){
+            auto from_hash = g.first;
+            for(auto to_hash: g.second){
+                edge_count[from_hash][to_hash]++;
             }
         }
     }
     /* add edges where k>=n(1-gama)+f+1 {>= tx_edge_threshold} */
+    std::vector<std::pair<uint256_t, uint256_t>> missing;
     for(auto &from : edge_count){
         for(auto &to : from.second){
             uint256_t from_v = from.first;
             uint256_t to_v = to.first;
             uint16_t occurance = to.second;
-            if(1.0 * occurance >= config.tx_edge_threshold
-                && graph[to_v].count(from_v)==0){ 
+            if(1.0 * occurance >= config.tx_edge_threshold){
+                if(graph[to_v].count(from_v)==0){ 
                     /* edge occurance is above threshold and no reverse edge is already present in graph */
                     graph[from_v].insert(to_v);
                 }
+            }
+            else{
+                if(occurance > 0){
+                    missing.push_back(std::make_pair(from_v, to_v));
+                }
+            }
         }
     }
     /** (5) Compute the condensation graph G* **/
@@ -638,13 +658,18 @@ std::unordered_map<uint256_t, std::unordered_set<uint256_t>> HotStuffCore::fair_
             HOTSTUFF_LOG_DEBUG("[[fairPropose END]] [R-%d] val = %.10s", get_id(), get_hex(tx).c_str());
         }
     }
+
+    HOTSTUFF_LOG_INFO("[[fairPropose END]] # missing edges = %ld", missing.size());
+    for(auto mis: missing){
+        HOTSTUFF_LOG_INFO("[[fairPropose END]] missing = (%.10s, %.10s)", get_hex(mis.first).c_str(), get_hex(mis.second).c_str());
+    }
 #endif
 
     for(ReplicaID replica: replicas){
-        storage->clear_front_ordered_hash(replica);
+        storage->clear_front_ordered_dag(replica);
     }
 
-    return graph;
+    return std::make_pair(graph, missing);
 }
 
 // Themis

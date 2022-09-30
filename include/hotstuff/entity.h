@@ -317,7 +317,7 @@ struct BlockHeightCmp {
 class EntityStorage {
     std::unordered_map<const uint256_t, block_t> blk_cache;
     std::unordered_map<const uint256_t, command_t> cmd_cache;
-    std::unordered_map<ReplicaID, std::queue<std::vector<uint256_t>>> ordered_hash_cache;                     // Themis
+    std::unordered_map<ReplicaID, std::queue<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>>> ordered_dag_cache;                     // Themis
     std::unordered_map<ReplicaID, std::queue<std::vector<std::pair<uint256_t, uint256_t>>>> l_update_cache;   // Themis
     OrderedList *local_order_seen_execute_level_cache;                                            // Themis
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing_cache;             // Themis
@@ -410,19 +410,48 @@ class EntityStorage {
     }
 
     // Themis
-    void add_local_order(ReplicaID rid, const std::vector<uint256_t> ordered_hash, 
+    void add_local_order(ReplicaID rid, std::unordered_map<uint256_t, std::unordered_set<uint256_t>> ordered_dag, 
                             const std::vector<std::pair<uint256_t, uint256_t>> l_update){
         /* Overwriting old values if exists */
-        std::vector<uint256_t> unproposed_hashes;
-        for(auto cmd: ordered_hash){
+        std::unordered_map<uint256_t, std::unordered_set<uint256_t>> unproposed_ordered_dag;
+        for(auto &g: ordered_dag){
+            auto cmd = g.first;
             if(!is_cmd_proposed(cmd)){
-                unproposed_hashes.push_back(cmd);
+                unproposed_ordered_dag[cmd] = std::unordered_set<uint256_t>();
             }
         }
-        if(!unproposed_hashes.empty()){
-            ordered_hash_cache[rid].push(unproposed_hashes);
+        
+        if(!unproposed_ordered_dag.empty()){
+            if(unproposed_ordered_dag.size()<ordered_dag.size()){
+                /* remove the proposed cmds from ordered dag and adjust the graph */
+                /* ordered_dag = A->B->C, B is already proposed then */
+                /* unproposed_ordered_dag = A->C */
+                for(auto &g: ordered_dag){
+                    auto from = g.first;
+                    if(unproposed_ordered_dag.count(from)==0){
+                        continue;
+                    }
+                    for(auto to: g.second){
+                        if(unproposed_ordered_dag.count(to)==0){
+                            /* Remove the proposed hashes (eg remove B) */
+                            unproposed_ordered_dag[from].insert(ordered_dag[to].begin(), ordered_dag[to].end());
+                        }
+                        else{
+                            /* Keep the unproposed hash linking */
+                            unproposed_ordered_dag[from].insert(to);
+                        }
+                    }
+                }
+            }
+            else{
+                unproposed_ordered_dag = ordered_dag;
+            }
+
+            /* update the cache */
+            ordered_dag_cache[rid].push(unproposed_ordered_dag);
         }
-        // ordered_hash_cache[rid].push(ordered_hash);
+
+
         l_update_cache[rid].push(l_update);
     }
 
@@ -433,10 +462,10 @@ class EntityStorage {
     // }
 
     // Themis
-    void clear_front_ordered_hash(ReplicaID replica) {
-        ordered_hash_cache[replica].pop();
-        if(ordered_hash_cache[replica].empty()){
-            ordered_hash_cache.erase(replica);
+    void clear_front_ordered_dag(ReplicaID replica) {
+        ordered_dag_cache[replica].pop();
+        if(ordered_dag_cache[replica].empty()){
+            ordered_dag_cache.erase(replica);
         }
     }
     // Themis
@@ -448,44 +477,14 @@ class EntityStorage {
     }
 
     // Themis
-    void clear_ordered_hash_if_propose(){
-        for(auto &cache: ordered_hash_cache){
-            std::queue<std::vector<uint256_t>> *q = &cache.second;
-            auto q_size = q->size();
-            for(size_t qi=0; qi<q_size; qi++){
-                auto order_size = q->front().size();
-                HOTSTUFF_LOG_INFO("[[clear_ordered_hash_if_propose]] Order size before = %ld", q->front().size());
-                for(size_t i=0; i<order_size; i++){
-                    if(is_cmd_proposed(q->front()[i])){
-                        auto cmd = q->front()[i];
-                        /* this cmd is already proposed */
-                        q->front().erase(q->front().begin() + i);
-                        HOTSTUFF_LOG_INFO("[[clear_ordered_hash_if_propose]] cleared cmd = %.10s", get_hex(cmd).c_str());
-                        break;
-                    }
-                }
-                auto order = q->front();
-                HOTSTUFF_LOG_INFO("[[clear_ordered_hash_if_propose]] Order size after = %ld", q->front().size());
-                q->pop();
-                if(order.size()>0){
-                    q->push(order);
-                }
-                else{
-                    HOTSTUFF_LOG_INFO("[[clear_ordered_hash_if_propose]] order is completely removed from replica = %d", cache.first);
-                }
-            }
-        }
-    }
-
-    // Themis
     size_t get_local_order_cache_size(){
-        return ordered_hash_cache.size();
+        return ordered_dag_cache.size();
     }
 
     // Themis
-    std::vector<ReplicaID> get_ordered_hash_replia_vector(){
+    std::vector<ReplicaID> get_ordered_dag_replia_vector(){
         std::vector<ReplicaID> replicas;
-        for(auto const& order: ordered_hash_cache){
+        for(auto const& order: ordered_dag_cache){
             replicas.push_back(order.first);
         }
         return replicas;
@@ -501,8 +500,8 @@ class EntityStorage {
     }
 
     // Themis
-    std::vector<uint256_t> get_ordered_hash_vector(ReplicaID replica) {
-        return ordered_hash_cache[replica].front();
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> get_ordered_dag(ReplicaID replica) {
+        return ordered_dag_cache[replica].front();
     }
 
     // Themis

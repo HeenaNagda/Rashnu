@@ -26,6 +26,7 @@
 #include "hotstuff/type.h"
 #include "hotstuff/entity.h"
 #include "hotstuff/crypto.h"
+#include "hotstuff/graph.h"
 
 namespace hotstuff {
 
@@ -118,7 +119,7 @@ class HotStuffCore {
     void print_all_blocks(const block_t &nblk, const block_t &blk);     // Themis
     std::vector<uint256_t> fair_finalize(block_t const &blk, std::vector<std::pair<uint256_t, uint256_t>> const &e_update);       // Themis
     /** FairPropose() **/
-    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> fair_propose();        // Themis
+    std::pair<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>, std::vector<std::pair<uint256_t, uint256_t>>> fair_propose();        // Rashnus
     std::vector<std::pair<uint256_t, uint256_t>> fair_update();                         // Themis
     void reorder(ReplicaID proposer);                                                                   // Themis
 
@@ -293,7 +294,7 @@ struct Vote: public Serializable {
 struct LocalOrder: public Serializable {
     ReplicaID initiator;
     /** Local ordering as seen by replica "initiator" **/
-    std::vector<uint256_t> ordered_hashes;
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> ordered_dag;
     /** Local transaction ordering for previously proposed shaded transaction and have missing edges **/
     std::vector<std::pair<uint256_t, uint256_t>> l_update;
     /** handle of the core object to allow polymorphism */
@@ -301,17 +302,17 @@ struct LocalOrder: public Serializable {
 
     LocalOrder(): hsc(nullptr) {}
     LocalOrder(ReplicaID initiator, 
-                const std::vector<uint256_t> &ordered_hashes, 
+                const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &ordered_dag, 
                 const std::vector<std::pair<uint256_t, uint256_t>> &l_update,
                 HotStuffCore *hsc) : 
                     initiator(initiator),
-                    ordered_hashes(ordered_hashes),
+                    ordered_dag(ordered_dag),
                     l_update(l_update),
                     hsc(hsc){}
 
     LocalOrder(const LocalOrder &other):
                 initiator(other.initiator),
-                ordered_hashes(other.ordered_hashes),
+                ordered_dag(other.ordered_dag),
                 l_update(other.l_update),
                 hsc(other.hsc){}
 
@@ -322,10 +323,8 @@ struct LocalOrder: public Serializable {
         s << initiator;
 
         /** Serialize local ordering transaction hashes **/
-        s << htole((uint32_t)ordered_hashes.size());
-        for (const auto &h: ordered_hashes) {
-            s << h;
-        }
+        GraphFormatConversion *format = new GraphFormatConversion();
+        format->serialize(s, ordered_dag);
 
         /** Serialize edges that were missing in previous proposals and found now on the replica **/
         s << htole((uint32_t)l_update.size());
@@ -342,16 +341,11 @@ struct LocalOrder: public Serializable {
         s >> initiator;
 
         /** unserialized ordered_hashes **/
-        uint32_t size;
-        s >> size;
-        size = letoh(size);
-        ordered_hashes.resize(size);
-        for (auto &hashes: ordered_hashes)
-        {
-            s >> hashes;
-        }
+        GraphFormatConversion *format = new GraphFormatConversion();
+        format->unserialize(s, ordered_dag);
 
         /** unserialized l_update **/
+        uint32_t size;
         s >> size;
         size = letoh(size);
         l_update.resize(size);
@@ -366,10 +360,14 @@ struct LocalOrder: public Serializable {
         DataStream s;
         s << "<LocalOrder "
           << "rid=" << std::to_string(initiator) << " "
-          << "orderedHash=";
-        for (auto &hashes: ordered_hashes)
-        {
-            s << hashes << ",";
+          << "orderedDAG=";
+        
+        for(auto g: ordered_dag){
+            s << "{ " << g.first << ":";
+            for(auto cmd: g.second){
+                s << cmd;
+            }
+            s << " }";
         }
         s << " L_update=";
         for (auto &edge: l_update)

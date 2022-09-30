@@ -313,9 +313,11 @@ void HotStuffBase::local_order_handler(MsgLocalOrder &&msg, const Net::conn_t &c
 void HotStuffBase::process_local_order(const LocalOrder &local_order){
     if(on_receive_local_order(local_order, pmaker->get_parents())==true){
         /* FairPropose() */
-        std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph = fair_propose();
+        auto fair_proposal = fair_propose();
+        auto graph = fair_proposal.first;
+        auto e_missing = fair_proposal.second;
         /* FairUpdate() */
-        std::vector<std::pair<uint256_t, uint256_t>> e_update = fair_update();
+        auto e_update = fair_update();
         // storage->clear_local_order();
         HOTSTUFF_LOG_DEBUG("[[process_local_order]] [fromR-%d] [thisL-%d] Cleared Local Order", local_order.initiator, get_id());
         /** Create a new proposal block and broadcast to the replicas **/
