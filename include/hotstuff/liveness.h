@@ -298,8 +298,9 @@ class PMRoundRobinProposer: virtual public PaceMaker {
     void do_new_consensus(int x, const std::vector<uint256_t> &cmds) {
         // TODO: Themis : instead of having empty graph, it should be passed through this method itself
         std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;
+        std::vector<std::pair<uint256_t, uint256_t>> e_missing;
         std::vector<std::pair<uint256_t, uint256_t>> e_update;
-        auto blk = hsc->on_propose(graph, e_update, get_parents(), bytearray_t());
+        auto blk = hsc->on_propose(graph, e_missing, e_update, get_parents(), bytearray_t());
         pm_qc_manual.reject();
         (pm_qc_manual = hsc->async_qc_finish(blk))
             .then([this, x]() {

@@ -35,8 +35,6 @@
 
 namespace hotstuff {
 
-#define MAX_PROPOSAL_SIZE_SUPPORTED 960
-
 enum EntityType {
     ENT_TYPE_CMD = 0x0,
     ENT_TYPE_BLK = 0x1
@@ -135,6 +133,7 @@ class Block {
     std::vector<uint256_t> parent_hashes;
     // std::vector<uint256_t> cmds;                                         // Themis
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;     // Themis
+    std::vector<std::pair<uint256_t, uint256_t>> e_missing;                 // Rashnu
     std::vector<std::pair<uint256_t, uint256_t>> e_update;                  // Themis
     quorum_cert_bt qc;
     bytearray_t extra;
@@ -167,6 +166,7 @@ class Block {
     Block(const std::vector<block_t> &parents,
         // const std::vector<uint256_t> &cmds,                                  // Themis
         std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph,     // Themis
+        std::vector<std::pair<uint256_t, uint256_t>> e_missing,
         std::vector<std::pair<uint256_t, uint256_t>> e_update,                  // Themis
         quorum_cert_bt &&qc,
         bytearray_t &&extra,
@@ -177,6 +177,7 @@ class Block {
             parent_hashes(get_hashes(parents)),
             // cmds(cmds),          // Themis
             graph(graph),           // Themis
+            e_missing(e_missing),   // Rashnu
             e_update(e_update),     // Themis
             qc(std::move(qc)),
             extra(std::move(extra)),
@@ -204,7 +205,19 @@ class Block {
 
     // Themis
     void update_graph(std::pair<uint256_t, uint256_t> const &edge){
-        graph[edge.first].insert(edge.second);
+        if(graph.count(edge.first)>0 && graph.count(edge.second)>0){
+            graph[edge.first].insert(edge.second);
+            /** remove missing edge from e_missing **/
+            for(int i=0; i<e_missing.size(); i++){
+                auto missing_edge = e_missing[i];
+                if((missing_edge.first==edge.first && missing_edge.second==edge.second)
+                    || (missing_edge.first==edge.second && missing_edge.second==edge.first)){
+                        e_missing.erase(e_missing.begin()+i);
+                        i--;
+                        break;
+                }
+            }
+        }
     }
 
     // Themis
@@ -217,53 +230,34 @@ class Block {
 
     // Themis
     std::vector<std::pair<uint256_t, uint256_t>> get_missing_edges() {
-        std::vector<std::pair<uint256_t, uint256_t>> missing_edges;
-        /* Get all the nodes */
-        std::vector<uint256_t> nodes;
-        for (auto const &g: graph) {
-            nodes.push_back(g.first);
-        }
+        // std::vector<std::pair<uint256_t, uint256_t>> missing_edges;
+        // /* Get all the nodes */
+        // std::vector<uint256_t> nodes;
+        // for (auto const &g: graph) {
+        //     nodes.push_back(g.first);
+        // }
 
-        /* Check if there is exactly one edge between any 2 pair of vertices */
-        size_t n = nodes.size();
-        uint256_t node_1, node_2;
-        for (size_t i=0; i<n; i++) {
-            node_1 = nodes[i];
-            for (size_t j=i+1; j<n; j++) {
-                node_2 = nodes[j];
-                if(graph[node_1].count(node_2)==0 && graph[node_2].count(node_1)==0) {
-                    // no edge found between these two nodes
-                    missing_edges.push_back(std::make_pair(node_1, node_2));
-                }
-            }
-        }
+        // /* Check if there is exactly one edge between any 2 pair of vertices */
+        // size_t n = nodes.size();
+        // uint256_t node_1, node_2;
+        // for (size_t i=0; i<n; i++) {
+        //     node_1 = nodes[i];
+        //     for (size_t j=i+1; j<n; j++) {
+        //         node_2 = nodes[j];
+        //         if(graph[node_1].count(node_2)==0 && graph[node_2].count(node_1)==0) {
+        //             // no edge found between these two nodes
+        //             missing_edges.push_back(std::make_pair(node_1, node_2));
+        //         }
+        //     }
+        // }
 
-        return missing_edges;
+        // return missing_edges;
+        return e_missing;
     }
 
-    // Themis
-    bool is_tournament_graph() {
-        /* Get all the nodes */
-        std::vector<uint256_t> nodes;
-        for (auto const &g: graph) {
-            nodes.push_back(g.first);
-        }
-
-        /* Check if there is exactly one edge between any 2 pair of vertices */
-        size_t n = nodes.size();
-        uint256_t node_1, node_2;
-        for (size_t i=0; i<n; i++) {
-            node_1 = nodes[i];
-            for (size_t j=i+1; j<n; j++) {
-                node_2 = nodes[j];
-                if(graph[node_1].count(node_2)==0 && graph[node_2].count(node_1)==0) {
-                    // no edge found between these two nodes
-                    return false;
-                }
-            }
-        }
-
-        return true;
+    // Rashnu
+    bool is_weakly_connected(){
+        return e_missing.size()==0;
     }
 
     // Themis

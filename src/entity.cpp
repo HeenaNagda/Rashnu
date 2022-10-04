@@ -42,6 +42,13 @@ void Block::serialize(DataStream &s) const {
     GraphFormatConversion *format = new GraphFormatConversion();
     format->serialize(s, graph);
 
+    /** Serialize e_missing **/
+    s << htole((uint32_t)e_missing.size());
+    for (auto edge: e_missing){
+        s << edge.first;
+        s << edge.second;
+    }
+
     /** Serialize e_update **/
     s << htole((uint32_t)e_update.size());
     for (auto edge: e_update){
@@ -97,6 +104,15 @@ void Block::unserialize(DataStream &s, HotStuffCore *hsc) {
     /** unserialize graph **/
     GraphFormatConversion *format = new GraphFormatConversion();
     format->unserialize(s, graph);
+
+    /** unserialize e_missing **/
+    s >> n;
+    n = letoh(n);
+    e_missing.resize(n);
+    for (auto &edge: e_missing) {
+        s >> edge.first;
+        s >> edge.second;
+    }
 
     /** unserialize e_update **/
     s >> n;

@@ -321,9 +321,9 @@ void HotStuffBase::process_local_order(const LocalOrder &local_order){
         // storage->clear_local_order();
         HOTSTUFF_LOG_DEBUG("[[process_local_order]] [fromR-%d] [thisL-%d] Cleared Local Order", local_order.initiator, get_id());
         /** Create a new proposal block and broadcast to the replicas **/
-        pmaker->beat().then([this, graph = std::move(graph), e_up = std::move(e_update)](ReplicaID proposer) {
+        pmaker->beat().then([this, graph=std::move(graph), e_missing=std::move(e_missing), e_up=std::move(e_update)](ReplicaID proposer) {
             if (proposer == get_id())
-                on_propose(graph, e_up, pmaker->get_parents());
+                on_propose(graph, e_missing, e_up, pmaker->get_parents());
         });
     }
 }

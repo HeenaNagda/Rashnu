@@ -24,6 +24,8 @@
 #include "hotstuff/entity.h"
 #include "salticidae/ref.h"
 
+#define MAX_PROPOSAL_SIZE_SUPPORTED 960
+
 namespace hotstuff {
 
 class CondensationGraph {

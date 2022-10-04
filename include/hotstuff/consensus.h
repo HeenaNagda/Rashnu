@@ -106,6 +106,7 @@ class HotStuffCore {
      * while the others are uncles/aunts */
     block_t on_propose(/* const std::vector<uint256_t> &cmds,*/                 // Themis
                     const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph,
+                    const std::vector<std::pair<uint256_t, uint256_t>> &e_missing,  // Rashnu
                     const std::vector<std::pair<uint256_t, uint256_t>> &e_update,
                     const std::vector<block_t> &parents,
                     bytearray_t &&extra = bytearray_t());

@@ -100,6 +100,10 @@ void HotStuffCore::update(const block_t &nblk) {
     /* Update missing edge cache */
     for(auto const &edge: nblk->get_e_update()) {
         storage->remove_missing_edge(edge.first, edge.second);
+        for (auto bk = nblk; bk->height > b_exec->height; bk = bk->parents[0])
+        { 
+            bk->update_graph(edge);
+        }
         HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Removing missing edge = %.10s -> %.10s", get_id(), get_hex(edge.first).c_str(), get_hex(edge.second).c_str());
     }
     for(auto const &edge: nblk->get_missing_edges()) {
@@ -248,15 +252,15 @@ std::vector<uint256_t> HotStuffCore::
     
     /** (1) For all Bi and transactions tx, tx0 in Bi that do not have an edge between them, 
      * if (tx; tx0) is in some Bj.e_update, then add that edge to Bi.G **/
-    for(auto const &edge: e_update){
-        if(graph.count(edge.first)>0 && graph.count(edge.second)>0){
-            /* nodes exists but edge does not exists: update these edges */
-            blk->update_graph(edge);
-        }
-    }
+    // for(auto const &edge: e_update){
+    //     if(graph.count(edge.first)>0 && graph.count(edge.second)>0){
+    //         /* nodes exists but edge does not exists: update these edges */
+    //         blk->update_graph(edge);
+    //     }
+    // }
 
     /** (2) is graph B.G is a tournament **/
-    if(!blk->is_tournament_graph()){
+    if(!blk->is_weakly_connected()){
         /* Graph is not a tournament graph */
         return std::vector<uint256_t>();
     }
@@ -279,6 +283,7 @@ std::vector<uint256_t> HotStuffCore::
 
 block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/               // Themis
                             const std::unordered_map<uint256_t, std::unordered_set<uint256_t>> &graph,
+                            const std::vector<std::pair<uint256_t, uint256_t>> &e_missing,  // Rashnu
                             const std::vector<std::pair<uint256_t, uint256_t>> &e_update,
                             const std::vector<block_t> &parents,
                             bytearray_t &&extra) {
@@ -297,7 +302,7 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
 
     /* create the new block */
     block_t bnew = storage->add_blk(
-        new Block(parents, /*cmds,*/ graph, e_update,
+        new Block(parents, /*cmds,*/ graph, e_missing, e_update,
             hqc.second->clone(), std::move(extra),
             parents[0]->height + 1,
             hqc.first,
@@ -375,6 +380,7 @@ void HotStuffCore::on_receive_proposal(const Proposal &prop) {
             HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Start]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
         }
     }
+    HOTSTUFF_LOG_INFO("[[on_receive_proposal Start]] # Missing edges = %ld", bnew->get_missing_edges().size());
 #endif
 
     if (!self_prop)
