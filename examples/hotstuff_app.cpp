@@ -379,7 +379,7 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
     for(int i=0; i<cmd->get_payload_size(); i++){
         data += std::to_string(cmd->get_payload()[i]) + " ";
     }
-    HOTSTUFF_LOG_DEBUG("[[client_request_cmd_handler]] Payload Received [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());                          
+    // HOTSTUFF_LOG_DEBUG("[[client_request_cmd_handler]] Payload Received [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());                          
     HOTSTUFF_LOG_DEBUG("processing %s", std::string(*cmd).c_str()); 
 
     auto dependency = small_bank_manager->get_users_detail(cmd->get_payload());
@@ -389,11 +389,11 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
          /* Execute the transaction before sending response to the client */
         small_bank_manager->execute_transaction(cmd->get_payload());
 
-        std::string data = "";
-        for(int i=0; i<cmd->get_payload_size(); i++){
-            data += std::to_string(cmd->get_payload()[i]) + " ";
-        }
-        HOTSTUFF_LOG_DEBUG("[[Callback]] Payload Executed [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());
+        // std::string data = "";
+        // for(int i=0; i<cmd->get_payload_size(); i++){
+        //     data += std::to_string(cmd->get_payload()[i]) + " ";
+        // }
+        // HOTSTUFF_LOG_DEBUG("[[Callback]] Payload Executed [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());
 
         resp_queue.enqueue(std::make_pair(fin, addr));
     });

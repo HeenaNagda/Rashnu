@@ -113,7 +113,7 @@ void HotStuffCore::update(const block_t &nblk) {
     /* Update proposal level local order cache */
     for(auto const &g: nblk->get_graph()) {
         storage->remove_local_order_seen_propose_level(g.first);
-        HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Removing Proposed cmd from seen = %.10s", get_id(), get_hex(g.first).c_str());
+        // HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Removing Proposed cmd from seen = %.10s", get_id(), get_hex(g.first).c_str());
     }
 
     /* nblk = b*, blk2 = b'', blk1 = b', blk = b */
@@ -197,6 +197,7 @@ void HotStuffCore::update(const block_t &nblk) {
         do_consensus(blk);
         LOG_PROTO("commit %s", std::string(*blk).c_str());
         size_t n = order.size();
+        HOTSTUFF_LOG_DEBUG("[[Update]] Start Deciding");
         for (size_t i=0; i<n; i++) {
             do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
             storage->remove_local_order_seen_execute_level(order[i]);
@@ -374,12 +375,12 @@ void HotStuffCore::on_receive_proposal(const Proposal &prop) {
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
     auto const &graph = bnew->get_graph();
-    for ( auto const &g: graph) {
-        HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Start]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
-        for (auto const &tx: g.second){
-            HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Start]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
-        }
-    }
+    // for ( auto const &g: graph) {
+    //     HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Start]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
+    //     for (auto const &tx: g.second){
+    //         HOTSTUFF_LOG_DEBUG("[[on_receive_proposal Start]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
+    //     }
+    // }
     HOTSTUFF_LOG_INFO("[[on_receive_proposal Start]] # Missing edges = %ld", bnew->get_missing_edges().size());
 #endif
 
@@ -495,12 +496,12 @@ void HotStuffCore::on_local_order (ReplicaID proposer, const std::vector<uint256
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
     HOTSTUFF_LOG_DEBUG("[[on_local_order]] [R-%d] Creating Receive LocalOrder DAG", get_id());
-    for(auto const &g: local_order.ordered_dag){
-        HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
-        for(auto const val: g.second){
-            HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
-        }
-    }
+    // for(auto const &g: local_order.ordered_dag){
+    //     HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
+    //     for(auto const val: g.second){
+    //         HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
+    //     }
+    // }
     HOTSTUFF_LOG_DEBUG("============================");
 #endif
     do_send_local_order(proposer, local_order);
@@ -514,12 +515,12 @@ bool HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
     HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Receive LocalOrder DAG on Leade", local_order.initiator, get_id());
-    for(auto const &g: local_order.ordered_dag){
-        HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
-        for(auto const val: g.second){
-            HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
-        }
-    }
+    // for(auto const &g: local_order.ordered_dag){
+    //     HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
+    //     for(auto const val: g.second){
+    //         HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
+    //     }
+    // }
     HOTSTUFF_LOG_DEBUG("============================");
 #endif    
     /** add new local order to the storage **/
@@ -531,14 +532,14 @@ bool HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
 
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
-       for(auto const &replica: storage->get_local_order_replia_vector()){
+       for(auto const &replica: storage->get_ordered_dag_replia_vector()){
             HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] Global Order started", local_order.initiator, get_id());
-            for(auto const &g: storage->get_ordered_hash_dag(replica)){
-                HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
-                for(auto const val: g.second){
-                    HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
-                }
-            }
+            // for(auto const &g: storage->get_ordered_dag(replica)){
+            //     HOTSTUFF_LOG_DEBUG("[%.10s]", get_hex(g.first).c_str());
+            //     for(auto const val: g.second){
+            //         HOTSTUFF_LOG_DEBUG("%.10s", get_hex(val).c_str());
+            //     }
+            // }
             HOTSTUFF_LOG_DEBUG("============================");
        }
 #endif
@@ -618,12 +619,12 @@ std::pair<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>, std::vec
 
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
-    for (auto const &scc: topo_sorted_cond_graph){
-        HOTSTUFF_LOG_DEBUG("[[fairPropose SCC start]] [R-%d]", get_id());
-        for(auto const &tx: scc){
-            HOTSTUFF_LOG_DEBUG("[[fairPropose SCC]] [R-%d] tx = %.10s", get_id(), get_hex(tx).c_str());
-        }
-    }
+    HOTSTUFF_LOG_DEBUG("[[fairPropose SCC start]] [R-%d]", get_id());
+    // for (auto const &scc: topo_sorted_cond_graph){
+    //     for(auto const &tx: scc){
+    //         HOTSTUFF_LOG_DEBUG("[[fairPropose SCC]] [R-%d] tx = %.10s", get_id(), get_hex(tx).c_str());
+    //     }
+    // }
 #endif
     
 
@@ -643,6 +644,8 @@ std::pair<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>, std::vec
         }
     }
 
+    HOTSTUFF_LOG_DEBUG("[[fairPropose 1]] [R-%d]", get_id());
+
     /** (7) Remove those transactions from G, that are part of vertices after V in S **/
     for( ; scc_i<n_scc; scc_i++){
         for(auto const &tx: topo_sorted_cond_graph[scc_i]){
@@ -654,10 +657,16 @@ std::pair<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>, std::vec
         }
     }
 
+    HOTSTUFF_LOG_DEBUG("[[fairPropose 2]] [R-%d]", get_id());
+
+    // /** Rashnu: Remove redundent edges by using transitive reduction algorithm **/
+    // TransitiveReduction *reduction = new TransitiveReduction(graph);
+    // graph = reduction->reduce();
+
     /** (8) Output G **/
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
-// #ifdef NOTDEFINE
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
     for ( auto const &g: graph) {
         HOTSTUFF_LOG_DEBUG("[[fairPropose END]] [R-%d] key = %.10s", get_id(), get_hex(g.first).c_str());
         for (auto const &tx: g.second){
@@ -674,6 +683,8 @@ std::pair<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>, std::vec
     for(ReplicaID replica: replicas){
         storage->clear_front_ordered_dag(replica);
     }
+
+    HOTSTUFF_LOG_DEBUG("[[fairPropose END]] [R-%d]", get_id());
 
     return std::make_pair(graph, missing);
 }

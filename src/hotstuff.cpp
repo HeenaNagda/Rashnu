@@ -451,12 +451,12 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
 void HotStuffBase::do_broadcast_proposal(const Proposal &prop) {
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
-    for ( auto const &g: prop.blk->get_graph()) {
-        HOTSTUFF_LOG_DEBUG("[[do_broadcast_proposal]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
-        for (auto const &tx: g.second){
-            HOTSTUFF_LOG_DEBUG("[[do_broadcast_proposal]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
-        }
-    }
+    // for ( auto const &g: prop.blk->get_graph()) {
+    //     HOTSTUFF_LOG_DEBUG("[[do_broadcast_proposal]] [R-%d] [L-%d] key = %.10s", get_id(), prop.proposer, get_hex(g.first).c_str());
+    //     for (auto const &tx: g.second){
+    //         HOTSTUFF_LOG_DEBUG("[[do_broadcast_proposal]] [R-%d] [L-%d] val = %.10s", get_id(), prop.proposer, get_hex(tx).c_str());
+    //     }
+    // }
 
     for (const auto &replica: peers){
         HOTSTUFF_LOG_DEBUG("[[do_broadcast_proposal]] [R-%d] [L-%d] replica = %s", get_id(), prop.proposer, get_hex10(replica).c_str());
@@ -500,14 +500,12 @@ void HotStuffBase::do_consensus(const block_t &blk) {
 }
 
 void HotStuffBase::do_decide(Finality &&fin) {
-    HOTSTUFF_LOG_DEBUG("[[do_decide Start]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
     part_decided++;
     state_machine_execute(fin);
-    HOTSTUFF_LOG_DEBUG("[[do_decide After State Machine Execute]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
     auto it = decision_waiting.find(fin.cmd_hash);
     if (it != decision_waiting.end())
     {
-        HOTSTUFF_LOG_DEBUG("[[do_decide Execute]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
+        // HOTSTUFF_LOG_DEBUG("[[do_decide Execute]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
         it->second(std::move(fin));
         decision_waiting.erase(it);
         storage->erase_cmd_dependency(fin.cmd_hash);
@@ -553,7 +551,7 @@ void HotStuffBase::start(
         ec.dispatch();
 
     cmd_pending.reg_handler(ec, [this](cmd_queue_t &q) {
-        HOTSTUFF_LOG_DEBUG("[[cmd_pending.reg_handler]] [R-%d] [L-%d] cmd_pending reg_handler Invoked", get_id(), pmaker->get_proposer());
+        // HOTSTUFF_LOG_DEBUG("[[cmd_pending.reg_handler]] [R-%d] [L-%d] cmd_pending reg_handler Invoked", get_id(), pmaker->get_proposer());
 
         std::pair<uint256_t, commit_cb_t> e;
 
@@ -574,7 +572,7 @@ void HotStuffBase::start(
 
             // Themis
             local_order_buffer.push(cmd_hash);
-            HOTSTUFF_LOG_DEBUG("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Push commans to local buffer = %.10s", get_id(), proposer, get_hex(cmd_hash).c_str());
+            // HOTSTUFF_LOG_DEBUG("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Push commans to local buffer = %.10s", get_id(), proposer, get_hex(cmd_hash).c_str());
 
             if(local_order_buffer.size() >= blk_size){
                 ReplicaID proposer = pmaker->get_proposer();
@@ -585,8 +583,9 @@ void HotStuffBase::start(
                     local_order_buffer.pop();
                 }
 
-#ifdef HOTSTUFF_ENABLE_LOG_DEBUG
-// #ifdef NOTDEFINE
+                HOTSTUFF_LOG_DEBUG("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Created List of commands and sending to pacemaker", get_id(), proposer);
+// #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
+#ifdef NOTDEFINE
                 for (uint32_t i = 0; i < blk_size; i++){
                     HOTSTUFF_LOG_DEBUG("[[cmd_pending.reg_handler]] [R-%d] [L-%d] Created List of commands and sending to pacemaker (%d) = %.10s", get_id(), proposer, i, get_hex(cmds[i]).c_str());
                 }
