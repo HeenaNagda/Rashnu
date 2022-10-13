@@ -542,7 +542,8 @@ void HotStuffBase::start(
     }
 
     /* ((n - 1) + 1 - 1) / 3 */
-    uint32_t nfaulty = peers.size() / 4;
+    // uint32_t nfaulty = peers.size() / 4;
+    uint32_t nfaulty = (peers.size() * ((2*fairness_parameter) -1))/4;
     if (nfaulty == 0)
         LOG_WARN("too few replicas in the system to tolerate any failure");
     on_init(nfaulty, fairness_parameter);       // Themis

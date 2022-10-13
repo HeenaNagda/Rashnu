@@ -135,6 +135,7 @@ int main(int argc, char **argv) {
     auto opt_sb_users = Config::OptValInt::create(10);
     auto opt_sb_prob_choose_mtx = Config::OptValDouble::create(0.9);
     auto opt_sb_skew_factor = Config::OptValDouble::create(0.1);
+    auto opt_fairness_parameter = Config::OptValDouble::create(1);  // Rashnu
     auto opt_idx = Config::OptValInt::create(0);
     auto opt_replicas = Config::OptValStrVec::create();
     auto opt_max_iter_num = Config::OptValInt::create(100);
@@ -155,6 +156,7 @@ int main(int argc, char **argv) {
     config.add_opt("sb-users", opt_sb_users, Config::SET_VAL);
     config.add_opt("sb-prob-choose_mtx", opt_sb_prob_choose_mtx, Config::SET_VAL);
     config.add_opt("sb-skew-factor", opt_sb_skew_factor, Config::SET_VAL);
+    config.add_opt("fairness-parameter", opt_fairness_parameter, Config::SET_VAL);  // Themis
     config.add_opt("idx", opt_idx, Config::SET_VAL);
     config.add_opt("cid", opt_cid, Config::SET_VAL);
     config.add_opt("replica", opt_replicas, Config::APPEND);
@@ -184,7 +186,9 @@ int main(int argc, char **argv) {
         replicas.push_back(NetAddr(NetAddr(_p.first).ip, htons(stoi(_p.second, &_))));
     }
 
-    nfaulty = (replicas.size() - 1) / 4;
+    double fairness_parameter = opt_fairness_parameter->get();
+    // nfaulty = (replicas.size() - 1) / 4;
+    nfaulty = (replicas.size() * ((2*fairness_parameter) -1))/4;
     HOTSTUFF_LOG_INFO("nfaulty = %zu", nfaulty);
 
     HOTSTUFF_LOG_INFO("opt_sb_users = %ld, opt_sb_prob_choose_mtx = %f, opt_sb_skew_factor = %f", opt_sb_users->get(), opt_sb_prob_choose_mtx->get(), opt_sb_skew_factor->get());

@@ -6,7 +6,7 @@
 # stable.
 
 
-./examples/hotstuff-client --idx 0 --iter -1 --max-async 1600
+./examples/hotstuff-client --idx 0 --iter -1 --max-async 1600 --fairness-parameter 0.9
 
 # ./examples/themis-client --idx 0 --iter -1 --max-async 4
 # gdb -ex r -ex bt -ex q --args ./examples/themis-client --idx 0 --iter -1 --max-async 10

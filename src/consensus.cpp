@@ -791,7 +791,7 @@ double HotStuffCore::get_non_blank_tx_threshold() {
     size_t f = n - nmajority;
     double gama = config.fairness_parameter;
     double solid = n - 2.0*f;
-    double shaded = n * (1.0-gama) + f + 1.0;
+    double shaded = (n * (1.0-gama)) + f + 1.0;
     return solid > shaded ? shaded : solid;
 }
 
@@ -801,7 +801,7 @@ double HotStuffCore::get_tx_edge_threshold() {
     size_t n = config.nreplicas;
     size_t f = n - nmajority;
     double gama = config.fairness_parameter;
-    return n * (1.0-gama) + f + 1.0;
+    return (n * (1.0-gama)) + f + 1.0;
 }
 
 void HotStuffCore::prune(uint32_t staleness) {
