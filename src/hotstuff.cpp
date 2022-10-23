@@ -318,6 +318,10 @@ void HotStuffBase::process_local_order(const LocalOrder &local_order){
         auto e_missing = fair_proposal.second;
         /* FairUpdate() */
         auto e_update = fair_update();
+        /* Store proposed commands */
+        for(auto g: graph){
+            storage->add_to_proposed_cmds_cache(g.first);
+        }
         // storage->clear_local_order();
         HOTSTUFF_LOG_DEBUG("[[process_local_order]] [fromR-%d] [thisL-%d] Cleared Local Order", local_order.initiator, get_id());
         /** Create a new proposal block and broadcast to the replicas **/

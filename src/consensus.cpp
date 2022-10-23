@@ -296,10 +296,10 @@ block_t HotStuffCore::on_propose(/* const std::vector<uint256_t> &cmds,*/       
     // for(auto g: graph){
     //     storage->clear_ordered_hash_on_propose(g.first);
     // }
-    /* Store proposed commands */
-    for(auto g: graph){
-        storage->add_to_proposed_cmds_cache(g.first);
-    }
+    // /* Store proposed commands */
+    // for(auto g: graph){
+    //     storage->add_to_proposed_cmds_cache(g.first);
+    // }
 
     /* create the new block */
     block_t bnew = storage->add_blk(
@@ -527,8 +527,46 @@ bool HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
     storage->add_local_order(local_order.initiator, local_order.ordered_dag, local_order.l_update);
 
     /** Trigger FairPropose() and FairUpdate() **/
-    size_t qsize = storage->get_local_order_cache_size();
-    if(qsize >= config.nmajority){
+    if(storage->get_local_order_cache_size() >= config.nmajority){
+
+        // Check if the commands in front of all the queues are proposed OR not
+        std::vector<ReplicaID> replicas = storage->get_ordered_dag_replia_vector();
+        for(ReplicaID replica: replicas){
+            std::unordered_map<uint256_t, std::unordered_set<uint256_t>> unproposed_ordered_dag;
+            auto ordered_dag = storage->get_ordered_dag(replica);
+            for(auto &g: ordered_dag){
+                auto cmd = g.first;
+                if(!storage->is_cmd_proposed(cmd)){
+                    unproposed_ordered_dag[cmd] = std::unordered_set<uint256_t>();
+                }
+            }
+            if(unproposed_ordered_dag.size() < ordered_dag.size()){
+                if(!unproposed_ordered_dag.empty()){
+                    for(auto &g: ordered_dag){
+                        auto from = g.first;
+                        if(unproposed_ordered_dag.count(from)==0){
+                            continue;
+                        }
+                        for(auto to: g.second){
+                            if(unproposed_ordered_dag.count(to)==0){
+                                /* Remove the proposed hashes (eg remove B) */
+                                unproposed_ordered_dag[from].insert(ordered_dag[to].begin(), ordered_dag[to].end());
+                            }
+                            else{
+                                /* Keep the unproposed hash linking */
+                                unproposed_ordered_dag[from].insert(to);
+                            }
+                        }
+                    }
+                    storage->clear_front_ordered_dag(replica);
+                    storage->add_ordered_dag_to_front(replica, unproposed_ordered_dag);
+                }
+                else{
+                    storage->clear_front_ordered_dag(replica);
+                } 
+            }
+        }
+
 
 #ifdef HOTSTUFF_ENABLE_LOG_DEBUG
 // #ifdef NOTDEFINE
@@ -543,7 +581,7 @@ bool HotStuffCore::on_receive_local_order (const LocalOrder &local_order, const 
             HOTSTUFF_LOG_DEBUG("============================");
        }
 #endif
-        return true;
+        return storage->get_local_order_cache_size() >= config.nmajority;;
     }
     HOTSTUFF_LOG_DEBUG("[[on_receive_local_order]] [fromR-%d] [thisL-%d] No majority Found", local_order.initiator, get_id());
     return false;

@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <ios>
 #include <queue>
+#include <deque>
 
 #include "salticidae/netaddr.h"
 #include "salticidae/ref.h"
@@ -311,7 +312,7 @@ struct BlockHeightCmp {
 class EntityStorage {
     std::unordered_map<const uint256_t, block_t> blk_cache;
     std::unordered_map<const uint256_t, command_t> cmd_cache;
-    std::unordered_map<ReplicaID, std::queue<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>>> ordered_dag_cache;                     // Themis
+    std::unordered_map<ReplicaID, std::deque<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>>> ordered_dag_cache;
     std::unordered_map<ReplicaID, std::queue<std::vector<std::pair<uint256_t, uint256_t>>>> l_update_cache;   // Themis
     OrderedList *local_order_seen_execute_level_cache;                                            // Themis
     std::unordered_map<uint256_t, std::unordered_set<uint256_t>> edges_missing_cache;             // Themis
@@ -442,22 +443,21 @@ class EntityStorage {
             }
 
             /* update the cache */
-            ordered_dag_cache[rid].push(unproposed_ordered_dag);
+            ordered_dag_cache[rid].push_back(unproposed_ordered_dag);
         }
 
 
         l_update_cache[rid].push(l_update);
     }
 
-    // Themis
-    // void clear_local_order(){
-    //     ordered_hash_cache.clear();
-    //     l_update_cache.clear();
-    // }
+      // Rashnu
+    void add_ordered_dag_to_front(ReplicaID rid, std::unordered_map<uint256_t, std::unordered_set<uint256_t>> ordered_dag){
+        ordered_dag_cache[rid].push_front(ordered_dag);
+    }
 
     // Themis
     void clear_front_ordered_dag(ReplicaID replica) {
-        ordered_dag_cache[replica].pop();
+        ordered_dag_cache[replica].pop_front();
         if(ordered_dag_cache[replica].empty()){
             ordered_dag_cache.erase(replica);
         }

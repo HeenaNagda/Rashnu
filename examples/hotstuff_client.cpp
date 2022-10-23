@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
 
     double fairness_parameter = opt_fairness_parameter->get();
     // nfaulty = (replicas.size() - 1) / 4;
-    nfaulty = (replicas.size() * ((2*fairness_parameter) -1))/4;
+    nfaulty = (replicas.size() * ((2.0*fairness_parameter) - 1.0) *1.0)/4.0;
     HOTSTUFF_LOG_INFO("nfaulty = %zu", nfaulty);
 
     HOTSTUFF_LOG_INFO("opt_sb_users = %ld, opt_sb_prob_choose_mtx = %f, opt_sb_skew_factor = %f", opt_sb_users->get(), opt_sb_prob_choose_mtx->get(), opt_sb_skew_factor->get());
