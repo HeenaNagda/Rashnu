@@ -3,10 +3,12 @@ bin_name: "hotstuff-client"
 # total number of commands
 max_iter: 200000
 # number of concurrently outstanding requests (commands)
-max_async: 175
+max_async: 400
 # number of total users in small bank
-sb-users: 20
+sb-users: 100
 # Small bank: Probability of choosing modifying transactions
-sb-prob-choose_mtx: 0.9
+sb-prob-choose_mtx: 0.0
 # Small Bank: Skew factor used in Zipfian distribution for choosing a user
-sb-skew-factor: 0.1
+sb-skew-factor: 0.01
+# Small Bank: Fairness parameter (gamma)
+fairness-parameter: 1.0

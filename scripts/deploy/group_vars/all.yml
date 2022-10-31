@@ -7,10 +7,10 @@ ansible_ssh_private_key_file: ~/.ssh/id_rsa
 # the rest of config works for Ubuntu 18.04 image on Amazon EC2
 
 ansible_connection: ssh
-ansible_user: heenan
+ansible_user: shubhendra
 # ansible_ssh_user: heenan
 # remote directory that keeps the work directory for the running app
-testbed_prefix: "/users/heenan/testbed"
+testbed_prefix: "/users/shubhendra/testbed"
 # must use Python 3
 ansible_python_interpreter: /usr/bin/python3
 
@@ -21,10 +21,10 @@ hs_flags: "-g -DHOTSTUFF_ENABLE_BENCHMARK"
 # process name that is used by killall in reset
 bin_name: hotstuff-app
 # binary path (remote)
-replica_bin: "/users/heenan/libhotstuff/examples/hotstuff-app"
-client_bin: "/users/heenan/libhotstuff/examples/hotstuff-client"
+replica_bin: "/users/shubhendra/libhotstuff/examples/hotstuff-app"
+client_bin: "/users/shubhendra/libhotstuff/examples/hotstuff-client"
 # remote repo path
-hs_repo_dir: "/users/heenan/libhotstuff"
+hs_repo_dir: "/users/shubhendra/libhotstuff"
 # local source code path (that will be copied to the remote)
 hs_local_repo_dir: "../../"
 hs_conf_dir: "conf"

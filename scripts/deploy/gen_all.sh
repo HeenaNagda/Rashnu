@@ -8,4 +8,4 @@
 
 python3 ./gen_inventory.py --prefix 'hotstuff.gen' > nodes.ini
 awk '{print $2}' replicas.txt > replicas_inter.txt
-python3 ../gen_conf.py --ips replicas_inter.txt --iter 1 --prefix 'hotstuff.gen' --keygen ../../hotstuff-keygen --tls-keygen ../../hotstuff-tls-keygen --sb-users 1000000 --sb-prob-choose_mtx 0.9 --sb-skew-factor 0.1 --fairness-parameter 1.0 --block-size 100 --clinworker 1 --nworker 1 --repnworker 1 --repburst 100 --cliburst 1000
+python3 ../gen_conf.py --ips replicas_inter.txt --iter 1 --prefix 'hotstuff.gen' --keygen ../../hotstuff-keygen --tls-keygen ../../hotstuff-tls-keygen --sb-users 1000000 --sb-prob-choose_mtx 0.95 --sb-skew-factor 0.01 --fairness-parameter 1.0 --block-size 400 --clinworker 1 --nworker 1 --repnworker 1 --repburst 100 --cliburst 1000

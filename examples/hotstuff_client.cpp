@@ -132,14 +132,14 @@ std::pair<std::string, std::string> split_ip_port_cport(const std::string &s) {
 int main(int argc, char **argv) {
     Config config("hotstuff.conf");
 
-    auto opt_sb_users = Config::OptValInt::create(10);
-    auto opt_sb_prob_choose_mtx = Config::OptValDouble::create(0.9);
-    auto opt_sb_skew_factor = Config::OptValDouble::create(0.1);
+    auto opt_sb_users = Config::OptValInt::create(1000000);
+    auto opt_sb_prob_choose_mtx = Config::OptValDouble::create(1.0);
+    auto opt_sb_skew_factor = Config::OptValDouble::create(0.01);
     auto opt_fairness_parameter = Config::OptValDouble::create(1);  // Rashnu
     auto opt_idx = Config::OptValInt::create(0);
     auto opt_replicas = Config::OptValStrVec::create();
-    auto opt_max_iter_num = Config::OptValInt::create(100);
-    auto opt_max_async_num = Config::OptValInt::create(10);
+    auto opt_max_iter_num = Config::OptValInt::create(200000);
+    auto opt_max_async_num = Config::OptValInt::create(400);
     auto opt_cid = Config::OptValInt::create(-1);
     auto opt_max_cli_msg = Config::OptValInt::create(65536); // 64K by default
 

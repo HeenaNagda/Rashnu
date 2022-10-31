@@ -68,7 +68,23 @@ if __name__ == '__main__':
     values.append(cnt)
     print(values)
     print("lat = {:.3f}ms".format(sum(lats) / len(lats) * 1e3))
+    total_t = 0
+    number_o = 0
+    for i in range(len(values)-2):
+        if values[i] != 0 :
+            total_t += values[i] 
+            number_o += 1 
+    
+    print("lat:", round(sum(lats) / len(lats) * 1e3))
+
     lats, _ = remove_outliers(lats)
-    print("lat = {:.3f}ms".format(sum(lats) / len(lats) * 1e3))
+    
+    print("abs-lat:", round(sum(lats) / len(lats) * 1e3))
+
+    print("thru", round(total_t/number_o))
+    print("abs-thru", round(sum(values)/len(values)))
+   
+
+
     if args.plot:
         plot_thr(args.output)
