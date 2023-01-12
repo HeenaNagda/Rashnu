@@ -88,6 +88,19 @@ class GraphFormatConversion{
 
 };
 
+class GraphOperation{
+private:
+    std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph;
+    std::unordered_set<uint256_t> roots;
+    std::unordered_map<uint256_t, size_t> n_incoming;
+    size_t leaf_count;
+public:
+    GraphOperation(std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph);
+    std::unordered_set<uint256_t> get_roots();
+    std::unordered_map<salticidae::uint256_t, size_t> get_incoming_count();
+    size_t get_leaf_count();
+};
+
 }
 #endif
 

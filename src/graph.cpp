@@ -333,4 +333,41 @@ namespace hotstuff {
             }
         }
     }
+
+    GraphOperation::GraphOperation(std::unordered_map<uint256_t, std::unordered_set<uint256_t>> graph){
+        this->graph = graph;
+        this->leaf_count=0;
+
+        for(auto g: graph){
+            n_incoming[g.first] = 0; 
+        }
+        
+        for(auto g: graph){
+            if(g.second.empty()){
+                leaf_count++;
+                continue;
+            }
+            for(auto child: g.second){
+                n_incoming[child]++; 
+            }  
+        }
+        
+        for(auto n_inc: n_incoming){
+            if(n_inc.second==0){
+                roots.insert(n_inc.first);
+            }   
+        }
+    }
+
+    std::unordered_set<uint256_t> GraphOperation::get_roots(){
+        return this->roots;
+    }
+
+    std::unordered_map<salticidae::uint256_t, size_t> GraphOperation::get_incoming_count(){
+        return this->n_incoming;
+    }
+
+    size_t GraphOperation::get_leaf_count(){
+        return this->leaf_count;
+    }
 }
