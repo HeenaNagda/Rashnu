@@ -160,8 +160,9 @@ class HotStuffCore {
     void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order, bool is_reorder=false);       // Themis
     /** Called when local order is received on Leader from a Replica  **/
     bool on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);   // Themis
-    /** FairFinalize() **/
+    /** Print() **/
     void print_all_blocks(const block_t &nblk, const block_t &blk);     // Themis
+    /** FairFinalize() **/
     std::vector<uint256_t> fair_finalize_old(block_t const &blk, std::vector<std::pair<uint256_t, uint256_t>> const &e_update);       // Themis
     std::unordered_map<salticidae::uint256_t, std::unordered_set<salticidae::uint256_t>> fair_finalize(block_t const &blk, std::vector<std::pair<uint256_t, uint256_t>> const &e_update); // Rashnu
     /** FairPropose() **/
@@ -185,6 +186,7 @@ class HotStuffCore {
     virtual void do_decide(Finality &&fin) = 0;
     
     protected:
+
     virtual void do_consensus(const block_t &blk) = 0;
     /** Called by HotStuffCore upon broadcasting a new proposal.
      * The user should send the proposal message to all replicas except for

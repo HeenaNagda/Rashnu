@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
 
     auto opt_sb_users = Config::OptValInt::create(10);
     auto opt_sb_prob_choose_mtx = Config::OptValDouble::create(0.9);
-    auto opt_sb_skew_factor = Config::OptValDouble::create(0.1);
+    auto opt_sb_skew_factor = Config::OptValDouble::create(0.01);
     auto opt_fairness_parameter = Config::OptValDouble::create(1);  // Rashnu
     auto opt_idx = Config::OptValInt::create(0);
     auto opt_replicas = Config::OptValStrVec::create();

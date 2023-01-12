@@ -179,7 +179,6 @@ void ThreadPool::execute(){
     }
 }
 
-
 /* The core logic of HotStuff, is fairly simple :). */
 /*** begin HotStuff protocol logic ***/
 HotStuffCore::HotStuffCore(ReplicaID id,
@@ -232,6 +231,7 @@ bool HotStuffCore::on_deliver_blk(const block_t &blk) {
 
     blk->delivered = true;
     LOG_DEBUG("deliver %10s", std::string(*blk).c_str());
+
     return true;
 }
 
@@ -346,6 +346,8 @@ void HotStuffCore::update(const block_t &nblk) {
         blk->decision = 1;
         do_consensus(blk);
         LOG_PROTO("commit %s", std::string(*blk).c_str());
+       
+       
         size_t n = order.size();
         HOTSTUFF_LOG_INFO("[[Update]] Start Deciding");
         // for (size_t i=0; i<n; i++) {
@@ -397,6 +399,8 @@ void HotStuffCore::print_all_blocks(const block_t &nblk, const block_t &blk){
     //                     get_hex(b0->get_hash()).c_str(), b0->get_height(),
     //                     get_hex(b_exec->get_hash()).c_str(), b_exec->get_height());
 }
+
+
 
 // Themis
 std::vector<uint256_t> HotStuffCore::
