@@ -21,6 +21,10 @@
 #include <cassert>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
+#include <mutex>
+#include <condition_variable>
+#include <deque>
 
 #include "hotstuff/promise.hpp"
 #include "hotstuff/type.h"
@@ -34,6 +38,46 @@ struct Proposal;
 struct Vote;
 struct LocalOrder;
 struct Finality;
+
+template <typename T>
+class BlockingQueue{
+private:
+    std::deque<T> d_queue;
+    std::condition_variable cond;
+    std::mutex mtx;
+    bool terminate;
+public:
+    BlockingQueue();
+    void push(T const& value);
+    T pop();
+    bool empty();
+    void do_terminate();
+    bool termination_state();
+};
+class ThreadPool{
+private:
+    hotstuff::ReplicaID rid; 
+    std::atomic_int cmd_id;
+    uint32_t cmd_height;
+    salticidae::uint256_t blk_hash;
+    HotStuffCore *hsc;
+
+    std::unordered_map<salticidae::uint256_t, std::unordered_set<salticidae::uint256_t>> graph;
+    std::unordered_map<salticidae::uint256_t, size_t> n_incoming;
+    size_t leaf_count;
+    std::mutex mtx_n_incoming;
+    std::mutex mtx_leaf_count;
+    std::vector<std::thread*> threads;
+    size_t pool_size;
+    BlockingQueue<uint256_t> shared_queue;
+
+    void execute();
+    int get_cmd_id();
+
+public:
+    ThreadPool(size_t pool_size, std::unordered_map<salticidae::uint256_t, std::unordered_set<salticidae::uint256_t>> &graph, hotstuff::ReplicaID rid, uint32_t cmd_height, salticidae::uint256_t blk_hash, HotStuffCore *obj);
+    void start_execute_parallel();
+};
 
 /** Abstraction for HotStuff protocol state machine (without network implementation). */
 class HotStuffCore {
@@ -116,9 +160,11 @@ class HotStuffCore {
     void on_local_order (ReplicaID proposer, const std::vector<uint256_t> &order, bool is_reorder=false);       // Themis
     /** Called when local order is received on Leader from a Replica  **/
     bool on_receive_local_order (const LocalOrder &local_order, const std::vector<block_t> &parents);   // Themis
-    /** FairFinalize() **/
+    /** Print() **/
     void print_all_blocks(const block_t &nblk, const block_t &blk);     // Themis
-    std::vector<uint256_t> fair_finalize(block_t const &blk, std::vector<std::pair<uint256_t, uint256_t>> const &e_update);       // Themis
+    /** FairFinalize() **/
+    std::vector<uint256_t> fair_finalize_old(block_t const &blk, std::vector<std::pair<uint256_t, uint256_t>> const &e_update);       // Themis
+    std::unordered_map<salticidae::uint256_t, std::unordered_set<salticidae::uint256_t>> fair_finalize(block_t const &blk, std::vector<std::pair<uint256_t, uint256_t>> const &e_update); // Rashnu
     /** FairPropose() **/
     std::pair<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>, std::vector<std::pair<uint256_t, uint256_t>>> fair_propose();        // Rashnus
     std::vector<std::pair<uint256_t, uint256_t>> fair_update();                         // Themis
@@ -135,9 +181,13 @@ class HotStuffCore {
     /* Outputs of the state machine triggering external events.  The virtual
      * functions should be implemented by the user to specify the behavior upon
      * the events. */
-    protected:
+
+
     /** Called by HotStuffCore upon the decision being made for cmd. */
     virtual void do_decide(Finality &&fin) = 0;
+
+    protected:
+    
     virtual void do_consensus(const block_t &blk) = 0;
     /** Called by HotStuffCore upon broadcasting a new proposal.
      * The user should send the proposal message to all replicas except for

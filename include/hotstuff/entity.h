@@ -446,7 +446,6 @@ class EntityStorage {
             ordered_dag_cache[rid].push_back(unproposed_ordered_dag);
         }
 
-
         l_update_cache[rid].push(l_update);
     }
 

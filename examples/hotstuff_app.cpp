@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
 
     auto opt_sb_users = Config::OptValInt::create(10);
     auto opt_sb_prob_choose_mtx = Config::OptValDouble::create(0.9);
-    auto opt_sb_skew_factor = Config::OptValDouble::create(0.1);
+    auto opt_sb_skew_factor = Config::OptValDouble::create(0.01);
     auto opt_fairness_parameter = Config::OptValDouble::create(1);  // Themis
     auto opt_blk_size = Config::OptValInt::create(1);
     auto opt_parent_limit = Config::OptValInt::create(-1);
@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
     auto opt_nworker = Config::OptValInt::create(1);
     auto opt_repnworker = Config::OptValInt::create(1);
     auto opt_repburst = Config::OptValInt::create(100);
-    auto opt_clinworker = Config::OptValInt::create(8);
+    auto opt_clinworker = Config::OptValInt::create(4);
     auto opt_cliburst = Config::OptValInt::create(1000);
     auto opt_notls = Config::OptValFlag::create(false);
     auto opt_max_rep_msg = Config::OptValInt::create(4 << 20); // 4M by default
@@ -394,7 +394,20 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
         //     data += std::to_string(cmd->get_payload()[i]) + " ";
         // }
         // HOTSTUFF_LOG_DEBUG("[[Callback]] Payload Executed [%.10s] = %s", get_hex(cmd->get_hash()).c_str(), data.c_str());
+        usleep(1000);
 
+        // salticidae::ElapsedTime et;
+        // et.start();
+
+        // // usleep(100);
+        // for(uint64_t i=0; i<100; i++){
+        //     HOTSTUFF_LOG_INFO("ABCDEFGHIJKLMNOPQRSTUVWXYZ ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        // }
+        
+
+        // et.stop();
+        // HOTSTUFF_LOG_INFO("Busy waiting time at command execution = %lf", et.elapsed_sec);
+        
         resp_queue.enqueue(std::make_pair(fin, addr));
     });
 }
