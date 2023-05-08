@@ -310,6 +310,10 @@ struct BlockHeightCmp {
 };
 
 class EntityStorage {
+    std::mutex mtx_local_order_seen_execute_level_cache;
+    std::mutex mtx_local_order_seen_propose_level_cache;
+    std::mutex mtx_dependency_cache;
+    std::mutex mtx_proposed_cmds_cache;
     std::unordered_map<const uint256_t, block_t> blk_cache;
     std::unordered_map<const uint256_t, command_t> cmd_cache;
     std::unordered_map<ReplicaID, std::deque<std::unordered_map<uint256_t, std::unordered_set<uint256_t>>>> ordered_dag_cache;
@@ -510,16 +514,24 @@ class EntityStorage {
     }
     // Themis
     void update_local_order_seen(uint256_t const &cmd) {
+        {
+            std::unique_lock<std::mutex> lock(this->mtx_local_order_seen_execute_level_cache);
             local_order_seen_execute_level_cache->push_back(cmd);
+        }
+        {
+            std::unique_lock<std::mutex> lock(this->mtx_local_order_seen_propose_level_cache);
             local_order_seen_propose_level_cache->push_back(cmd);
+        }     
     }
 
     // Themis
     void remove_local_order_seen_execute_level(uint256_t cmd) {
+        std::unique_lock<std::mutex> lock(this->mtx_local_order_seen_execute_level_cache);
         local_order_seen_execute_level_cache->remove(cmd);
     }
     // Themis
     void remove_local_order_seen_propose_level(uint256_t cmd) {
+        std::unique_lock<std::mutex> lock(this->mtx_local_order_seen_propose_level_cache);
         local_order_seen_propose_level_cache->remove(cmd);
     }
 
@@ -530,6 +542,7 @@ class EntityStorage {
         //     cmds.push_back(*it);
         // }
         // return cmds;
+        std::unique_lock<std::mutex> lock(this->mtx_local_order_seen_propose_level_cache);
         return local_order_seen_propose_level_cache->get_cmds();
     }
 
@@ -562,6 +575,7 @@ class EntityStorage {
         //     }
         // }
         // return edges;
+        std::unique_lock<std::mutex> lock(this->mtx_local_order_seen_execute_level_cache);
         return local_order_seen_execute_level_cache->get_curr_missing_edges(edges_missing_cache);
     }
 
@@ -585,26 +599,31 @@ class EntityStorage {
 
     // Themis Dummy
     void add_to_proposed_cmds_cache(uint256_t cmd){
+        std::unique_lock<std::mutex> lock(this->mtx_proposed_cmds_cache);
         proposed_cmds_cache.insert(cmd);
     }   
 
     // Themis Dummy
     void remove_from_proposed_cmds_cache(uint256_t cmd){
+        std::unique_lock<std::mutex> lock(this->mtx_proposed_cmds_cache);
         proposed_cmds_cache.erase(cmd);
     }  
 
     // Themis Dummy
     bool is_cmd_proposed(uint256_t cmd){
+        std::unique_lock<std::mutex> lock(this->mtx_proposed_cmds_cache);
         return proposed_cmds_cache.count(cmd)>0;
     }  
 	
 	// Rashnu
     void update_dependency_cache(uint256_t cmd_hash, std::unordered_map<uint64_t, char> dependency){
+        std::unique_lock<std::mutex> lock(this->mtx_dependency_cache);
         dependency_cache[cmd_hash] = dependency;
     }  
 
     // Rashnu
     std::unordered_map<uint64_t, char> get_cmd_dependency(uint256_t cmd_hash){
+        std::unique_lock<std::mutex> lock(this->mtx_dependency_cache);
         if(dependency_cache.count(cmd_hash)>0){
             return dependency_cache[cmd_hash];
         }
@@ -613,6 +632,7 @@ class EntityStorage {
 
     // Rashnu
     void erase_cmd_dependency(uint256_t cmd_hash){
+        std::unique_lock<std::mutex> lock(this->mtx_dependency_cache);
          if(dependency_cache.count(cmd_hash)>0){
             dependency_cache.erase(cmd_hash);
         }

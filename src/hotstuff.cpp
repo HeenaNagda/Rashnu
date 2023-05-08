@@ -504,24 +504,36 @@ void HotStuffBase::do_consensus(const block_t &blk) {
 }
 
 void HotStuffBase::do_decide(Finality &&fin) {
-    HOTSTUFF_LOG_INFO("[[do_decide]] 1");
+    // part_decided++;
+    // state_machine_execute(fin);
+    // auto it = decision_waiting.find(fin.cmd_hash);
+    // if (it != decision_waiting.end())
+    // {
+    //     it->second(std::move(fin));
+    //     decision_waiting.erase(it);
+    //     storage->erase_cmd_dependency(fin.cmd_hash);
+    // }
+
     part_decided++;
-    HOTSTUFF_LOG_INFO("[[do_decide]] 2");
-    state_machine_execute(fin);
-    HOTSTUFF_LOG_INFO("[[do_decide]] 3");
-    auto it = decision_waiting.find(fin.cmd_hash);
-    HOTSTUFF_LOG_INFO("[[do_decide]] 4");
-    if (it != decision_waiting.end())
+
+    std::unordered_map<const salticidae::uint256_t, hotstuff::HotStuffBase::commit_cb_t>::iterator it;
     {
-        HOTSTUFF_LOG_INFO("[[do_decide Execute]] [R-%d] [L-] command = %.10s", get_id() ,get_hex(fin.cmd_hash).c_str());
-        it->second(std::move(fin));
-        HOTSTUFF_LOG_INFO("[[do_decide]] 5");
-        decision_waiting.erase(it);
-        HOTSTUFF_LOG_INFO("[[do_decide]] 6");
-        storage->erase_cmd_dependency(fin.cmd_hash);
-        HOTSTUFF_LOG_INFO("[[do_decide]] 7");
+        std::unique_lock<std::mutex> lock(this->mtx);
+        state_machine_execute(fin);
+        it = decision_waiting.find(fin.cmd_hash);
+        if (it == decision_waiting.end()){
+            return;
+        }
     }
-     HOTSTUFF_LOG_INFO("[[do_decide]] 8");
+
+    it->second(std::move(fin));
+    
+    {
+        std::unique_lock<std::mutex> lock(this->mtx);
+        decision_waiting.erase(it);
+    }
+   
+    storage->erase_cmd_dependency(fin.cmd_hash);
 }
 
 // Themis

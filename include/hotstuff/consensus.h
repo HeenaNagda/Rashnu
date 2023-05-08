@@ -67,6 +67,7 @@ private:
     size_t leaf_count;
     std::mutex mtx_n_incoming;
     std::mutex mtx_leaf_count;
+    std::mutex mtx_storage;
     std::vector<std::thread*> threads;
     size_t pool_size;
     BlockingQueue<uint256_t> shared_queue;

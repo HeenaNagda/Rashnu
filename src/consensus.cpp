@@ -30,6 +30,9 @@
 #define LOG_WARN HOTSTUFF_LOG_WARN
 #define LOG_PROTO HOTSTUFF_LOG_PROTO
 
+#define PARALLEL_EXC true
+#define THREAD_POOL_SIZE 20
+
 namespace hotstuff {
 
 template <typename T>
@@ -92,7 +95,7 @@ ThreadPool::ThreadPool(size_t pool_size, std::unordered_map<salticidae::uint256_
     GraphOperation *graph_opration = new GraphOperation(graph);
     this->n_incoming = graph_opration->get_incoming_count();
     for(auto n_inc: this->n_incoming){
-        HOTSTUFF_LOG_INFO("[[ThreadPool]] n_incoming[%.10s] = %ld", get_hex(n_inc.first).c_str(), n_inc.second); 
+        HOTSTUFF_LOG_DEBUG("[[ThreadPool]] n_incoming[%.10s] = %ld", get_hex(n_inc.first).c_str(), n_inc.second); 
     }
     
     
@@ -100,10 +103,10 @@ ThreadPool::ThreadPool(size_t pool_size, std::unordered_map<salticidae::uint256_
     for(auto root: roots){
         this->shared_queue.push(root);
     }
-    HOTSTUFF_LOG_INFO("[[ThreadPool]] n roots = %ld", roots.size()); 
+    HOTSTUFF_LOG_DEBUG("[[ThreadPool]] n roots = %ld", roots.size()); 
 
     this->leaf_count = graph_opration->get_leaf_count();
-    HOTSTUFF_LOG_INFO("[[ThreadPool]] leaf_count = %ld", leaf_count); 
+    HOTSTUFF_LOG_DEBUG("[[ThreadPool]] leaf_count = %ld", leaf_count); 
 }
 
 int ThreadPool::get_cmd_id(){
@@ -111,7 +114,7 @@ int ThreadPool::get_cmd_id(){
 }
 
 void ThreadPool::start_execute_parallel(){
-    HOTSTUFF_LOG_INFO("[[start_execute_parallel]] Start"); 
+    HOTSTUFF_LOG_DEBUG("[[start_execute_parallel]] Start"); 
     for(size_t i=0; i<this->pool_size; i++){
         std::thread *t = new std::thread(&ThreadPool::execute, this);
         this->threads.push_back(t);
@@ -123,22 +126,16 @@ void ThreadPool::start_execute_parallel(){
 }
 
 void ThreadPool::execute(){
-    HOTSTUFF_LOG_INFO("[[execute]] Thread Start, termination_state = %d", this->shared_queue.termination_state()); 
     while(!this->shared_queue.termination_state()){
-        HOTSTUFF_LOG_INFO("[[execute]] Thread 1, termination_state = %d", this->shared_queue.termination_state()); 
         uint256_t tx = this->shared_queue.pop();
 
         if(this->shared_queue.termination_state()==true){
             return;
         }
 
-        HOTSTUFF_LOG_INFO("[[execute]] Thread About to Execute Tx = %.10s", get_hex(tx).c_str());
-
         {
-            HOTSTUFF_LOG_INFO("[[execute]] Before mtx_n_incoming lock");
             // TODO: lock can be on individual tx instead of whole n_incoming queue
             std::unique_lock<std::mutex> lock(this->mtx_n_incoming);
-            HOTSTUFF_LOG_INFO("[[execute]] After mtx_n_incoming lock");
 
             if(this->n_incoming[tx]>0){
                 this->n_incoming[tx]--;
@@ -147,23 +144,22 @@ void ThreadPool::execute(){
                 }
             }
         }
-        HOTSTUFF_LOG_INFO("[[execute]] Thread Executing Tx = %.10s", get_hex(tx).c_str());
         // execute
         this->hsc->do_decide(Finality(this->rid, 1, this->get_cmd_id(), this->cmd_height, tx, this->blk_hash));
-        HOTSTUFF_LOG_INFO("[[execute]] execution 1");
-        this->hsc->storage->remove_local_order_seen_execute_level(tx);
-        HOTSTUFF_LOG_INFO("[[execute]] execution 2");
-        this->hsc->storage->remove_from_proposed_cmds_cache(tx);
-
-        HOTSTUFF_LOG_INFO("[[execute]] Thread After Execution Tx = %.10s", get_hex(tx).c_str());
         
-        HOTSTUFF_LOG_INFO("[[execute]] Done execution");
+        // {
+        //     std::unique_lock<std::mutex> lock(this->mtx_storage);
+        //     this->hsc->storage->remove_local_order_seen_execute_level(tx);
+        //     this->hsc->storage->remove_from_proposed_cmds_cache(tx);
+        // }
+        this->hsc->storage->remove_local_order_seen_execute_level(tx);
+        this->hsc->storage->remove_from_proposed_cmds_cache(tx);
+        
+        
         // push child into the dequeue
         if(this->graph[tx].empty()){
             // this is a leaf node
-            HOTSTUFF_LOG_INFO("[[execute]] No Child");
             std::unique_lock<std::mutex> lock(this->mtx_leaf_count);
-            HOTSTUFF_LOG_INFO("[[execute]] After mtx_leaf_count");
             this->leaf_count--;
             if(this->shared_queue.empty() && this->leaf_count==0){
                 this->shared_queue.do_terminate();
@@ -172,7 +168,6 @@ void ThreadPool::execute(){
             continue;
         }
 
-        HOTSTUFF_LOG_INFO("[[execute]] Parsing child");
         for(auto child: this->graph[tx]){
             this->shared_queue.push(child);
         }
@@ -333,35 +328,52 @@ void HotStuffCore::update(const block_t &nblk) {
 
         // Themis
         HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Graph Size = %d, block = %.10s", get_id(), blk->get_graph().size(), get_hex(blk->get_hash()).c_str());
-        auto order = fair_finalize(blk, nblk->get_e_update());
-        // auto order = fair_finalize_old(blk, nblk->get_e_update());
-        HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Final Order Size = %d", get_id(), order.size());
-        if(order.empty() && !blk->get_graph().empty()) {
-            /* this is not a tournament graph: stop looking at further blocks */
-            HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Not a tournament Graph", get_id());
-            break;
+        
+        if(PARALLEL_EXC==true){
+            auto order = fair_finalize(blk, nblk->get_e_update());
+            HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Final Order Size = %d", get_id(), order.size());
+            if(order.empty() && !blk->get_graph().empty()) {
+                /* this is not a tournament graph: stop looking at further blocks */
+                HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Not a tournament Graph", get_id());
+                break;
+            }
+
+             // Themis
+            blk->decision = 1;
+            do_consensus(blk);
+            LOG_PROTO("commit %s", std::string(*blk).c_str());
+
+            // Parallel Execution
+            ThreadPool *thread_pool = new ThreadPool(THREAD_POOL_SIZE, order, id, blk->height, blk->get_hash(), this);
+            thread_pool->start_execute_parallel();
         }
+        else{
+            auto order = fair_finalize_old(blk, nblk->get_e_update());
+            HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Final Order Size = %d", get_id(), order.size());
+            if(order.empty() && !blk->get_graph().empty()) {
+                /* this is not a tournament graph: stop looking at further blocks */
+                HOTSTUFF_LOG_DEBUG("[[update]] [R-%d] [L-] Not a tournament Graph", get_id());
+                break;
+            }
 
-        // Themis
-        blk->decision = 1;
-        do_consensus(blk);
-        LOG_PROTO("commit %s", std::string(*blk).c_str());
-       
-       
-        size_t n = order.size();
-        HOTSTUFF_LOG_INFO("[[Update]] Start Deciding");
-        // for (size_t i=0; i<n; i++) {
-        //     do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
-        //     storage->remove_local_order_seen_execute_level(order[i]);
-        //     storage->remove_from_proposed_cmds_cache(order[i]);
-        // }
-
-        ThreadPool *thread_pool = new ThreadPool(4, order, id, blk->height, blk->get_hash(), this);
-        thread_pool->start_execute_parallel();
+            // Themis
+            blk->decision = 1;
+            do_consensus(blk);
+            LOG_PROTO("commit %s", std::string(*blk).c_str());
+                
+            // Sequential Execution
+            size_t n = order.size();
+            for (size_t i=0; i<n; i++) {
+                do_decide(Finality(id, 1, i, blk->height, order[i], blk->get_hash()));
+                storage->remove_local_order_seen_execute_level(order[i]);
+                storage->remove_from_proposed_cmds_cache(order[i]);
+            }
+        }
+        
 
         b_exec = blk;
 
-        HOTSTUFF_LOG_INFO("[[update Decided]] [R-%d] [L-]", get_id());
+        HOTSTUFF_LOG_DEBUG("[[update Decided]] [R-%d] [L-]", get_id());
 
         // blk->decision = 1;
         // do_consensus(blk);

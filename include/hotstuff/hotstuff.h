@@ -21,6 +21,7 @@
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
+#include <mutex>
 
 #include "salticidae/util.h"
 #include "salticidae/network.h"
@@ -193,6 +194,8 @@ class HotStuffBase: public HotStuffCore {
     mutable double part_delivery_time_min;
     mutable double part_delivery_time_max;
     mutable std::unordered_map<const PeerId, uint32_t> part_fetched_replica;
+
+    std::mutex mtx;
 
     void on_fetch_cmd(const command_t &cmd);
     void on_fetch_blk(const block_t &blk);
