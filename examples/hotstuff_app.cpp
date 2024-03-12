@@ -388,7 +388,7 @@ void HotStuffApp::client_request_cmd_handler(MsgReqCmd &&msg, const conn_t &conn
 
          /* Execute the transaction before sending response to the client */
         small_bank_manager->execute_transaction(cmd->get_payload());
-        usleep(10);
+        // usleep(10);
 
         // std::string data = "";
         // for(int i=0; i<cmd->get_payload_size(); i++){

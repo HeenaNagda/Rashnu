@@ -16,7 +16,7 @@
 #define TX_TYPES 7
 #define MIN_SPLIT_TX_PARTY_SIZE 3
 #define MAX_SPLIT_TX_PARTY_SIZE 10
-
+#define WRITE_ONLY_TX false
 
 class SmallBank{
 private:
@@ -39,6 +39,8 @@ public:
     void amalgamate(uint64_t user_id);
     /* tx_type = 6 */
     std::pair<uint64_t,uint64_t> query(uint64_t user_id);
+    /* tx_type = 7 */
+    void withdraw_checking(uint64_t user_id);
 };
 
 class SmallBankManager{

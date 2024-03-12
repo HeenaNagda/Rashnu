@@ -100,6 +100,10 @@ std::pair<uint64_t,uint64_t> SmallBank::query(uint64_t user_id){
     return std::make_pair(checking_accounts[user_id], saving_accounts[user_id]);
 }
 
+void SmallBank::withdraw_checking(uint64_t user_id){
+    checking_accounts[user_id] = 0;
+}
+
 SmallBankManager::SmallBankManager(uint64_t n_users, double prob_choose_mtx, double skew_factor){
     this->bank = new SmallBank(n_users);
 
@@ -145,7 +149,12 @@ std::vector<uint64_t> SmallBankManager::get_next_transaction_serialized(){
     /** Find the next transaction type **/
     if(tx_distribution(tx_generator)){
         /* Modifying transactions are chosen */
-        tx_type = mtx_distribution(mtx_generator);
+        if(WRITE_ONLY_TX == true){
+            tx_type = 7;
+        }
+        else{
+            tx_type = mtx_distribution(mtx_generator);
+        }
     }
     else{
         /* Query transaction is chosen */
@@ -287,7 +296,18 @@ std::vector<uint64_t> SmallBankManager::get_next_transaction_by_type(uint64_t tx
             tx_payload.push_back(user_id);
             
             break;
-        }   
+        }  
+
+        case 7:{
+            /** void withdraw_checking(uint64_t user_id) **/
+            /** payload format : [tx type, user id] **/
+
+            /* find next user_id */
+            auto user_id = user_distribution(user_generator);
+            tx_payload.push_back(user_id);
+            
+            break;
+        } 
 
         default:
             fprintf(stderr, "Wrong transaction type at the time of serialization");
@@ -404,6 +424,16 @@ std::pair<uint64_t, uint64_t> SmallBankManager::execute_transaction(const uint64
             
             break;
         }  
+
+        case 7:{
+            /** void withdraw_checking(uint64_t user_id) **/
+            /** payload format : [tx type, user id] **/
+
+            auto user_id = tx_payload[idx++];
+            bank->withdraw_checking(user_id);
+            
+            break;
+        }
         
         default:
             fprintf(stderr, "Wrong transaction type received at the time of execution");
@@ -503,6 +533,15 @@ std::unordered_map<uint64_t, char> SmallBankManager::get_users_detail(const uint
             users_detail[user_id] = 'r';
             break;
         }  
+
+        case 7:{
+            /** std::void withdraw_checking(uint64_t user_id) **/
+            /** payload format : [tx type, user id] **/
+
+            auto user_id = tx_payload[idx++];
+            users_detail[user_id] = 'w';
+            break;
+        }
         
         default:
             fprintf(stderr, "Wrong transaction type received at the time of finding dependents");
